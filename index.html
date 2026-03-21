@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Miminhos da Mi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body style="font-family: Arial; max-width: 400px; margin: auto; padding: 10px;">
+
+<h1 style="text-align:center;">Miminhos da Mi</h1>
+
+<h2>Produtos</h2>
+
+<div id="produtos"></div>
+
+<h2>Carrinho</h2>
+<div id="carrinho"></div>
+
+<button onclick="enviar()" style="width:100%; padding:10px; background:green; color:white;">
+Finalizar via WhatsApp
+</button>
+
+<script>
+let produtos = [
+  {nome:"Colares", preco:12},
+  {nome:"Brincos", preco:3.5},
+  {nome:"Cristais", preco:2.5}
+];
+
+let carrinho = [];
+
+function mostrarProdutos(){
+  let html="";
+  produtos.forEach((p,i)=>{
+    html += `<div style="border:1px solid #ccc; margin:5px; padding:5px;">
+      ${p.nome} - ${p.preco}€
+      <button onclick="add(${i})">Adicionar</button>
+    </div>`;
+  });
+  document.getElementById("produtos").innerHTML = html;
+}
+
+function add(i){
+  carrinho.push(produtos[i]);
+  mostrarCarrinho();
+}
+
+function mostrarCarrinho(){
+  let html="";
+  carrinho.forEach(p=>{
+    html += `<div>${p.nome} - ${p.preco}€</div>`;
+  });
+  document.getElementById("carrinho").innerHTML = html;
+}
+
+function enviar(){
+  let msg="Encomenda:%0A";
+  let total=0;
+
+  carrinho.forEach(p=>{
+    msg += p.nome + " - " + p.preco + "€%0A";
+    total += p.preco;
+  });
+
+  msg += "Total: " + total + "€";
+
+  window.open("https://wa.me/351938655760?text=" + msg);
+}
+
+mostrarProdutos();
+</script>
+
+</body>
+</html>
