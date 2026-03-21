@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
@@ -11,11 +11,13 @@
 <h1 style="text-align:center;">Miminhos da Mi</h1>
 
 <h2>Produtos</h2>
-
 <div id="produtos"></div>
 
 <h2>Carrinho</h2>
 <div id="carrinho"></div>
+
+<h3>Nome do Cliente</h3>
+<input id="nomeCliente" placeholder="O teu nome" style="width:100%; padding:8px; margin-bottom:10px;">
 
 <button onclick="enviar()" style="width:100%; padding:12px; background:green; color:white; border:none; border-radius:10px; font-size:16px;">
 Finalizar via WhatsApp
@@ -26,17 +28,17 @@ let produtos = [
   {
     nome:"Colares",
     preco:12,
-    img:"https://via.placeholder.com/100?text=Colares"
+    img:"LINK_DA_IMAGEM_COLARES"
   },
   {
     nome:"Brincos",
     preco:3.5,
-    img:"https://via.placeholder.com/100?text=Brincos"
+    img:"LINK_DA_IMAGEM_BRINCOS"
   },
   {
     nome:"Cristais",
     preco:2.5,
-    img:"https://via.placeholder.com/100?text=Cristais"
+    img:"LINK_DA_IMAGEM_CRISTAIS"
   }
 ];
 
@@ -77,12 +79,17 @@ function mostrarCarrinho(){
   });
 
   html += `<hr><strong>Total: ${total}€</strong>`;
-
   document.getElementById("carrinho").innerHTML = html;
 }
 
 function enviar(){
+  let nome = document.getElementById("nomeCliente").value;
   let msg="Encomenda:%0A";
+  
+  if(nome){
+    msg += "Cliente: " + nome + "%0A%0A";
+  }
+
   let total=0;
 
   carrinho.forEach(p=>{
@@ -90,7 +97,7 @@ function enviar(){
     total += p.preco;
   });
 
-  msg += "Total: " + total + "€";
+  msg += "%0ATotal: " + total + "€";
 
   window.open("https://wa.me/351938655760?text=" + msg);
 }
