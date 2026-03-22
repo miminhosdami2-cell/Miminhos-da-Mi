@@ -1,118 +1,134 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <title>Miminhos da Mi</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    :root { --rosa: #db2777; --fundo: #fff5f7; --dourado: #b45309; }
-    body { font-family: sans-serif; max-width: 450px; margin: auto; padding: 15px; background: var(--fundo); color: #333; }
-    h1 { text-align: center; color: var(--rosa); font-family: serif; margin-bottom: 5px; }
-    .subtitle { text-align: center; font-size: 0.9em; color: #6b7280; margin-bottom: 20px; }
-    .card { background: white; border-radius: 15px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    .img-p { width: 100%; height: 250px; object-fit: cover; background: #eee; }
-    .info { padding: 15px; text-align: center; }
-    .btn-add { background: var(--rosa); color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; }
-    .carrinho { background: white; padding: 20px; border-radius: 15px; margin-top: 30px; border: 1px solid #eee; }
-    input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 1em; }
-    .btn-w { background: #25D366; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; font-size: 1.1em; cursor: pointer; margin-top: 10px; }
-  </style>
-</head>
-<body>
+<meta charset="UTF-8">
+<title>Miminhos da Mi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<h1>Miminhos da Mi ✨</h1>
-<p class="subtitle">Peças feitas com amor.
-  MbWay 938655760</p>
+<style>
+:root {
+  --rosa:#db2777;
+  --fundo:#fff5f7;
+  --dourado:#b45309;
+}
 
-<div id="loja">A carregar mimos...</div>
+body {
+  font-family:sans-serif;
+  max-width:450px;
+  margin:auto;
+  padding:15px;
+  background:var(--fundo);
+}
 
-<div class="carrinho">
-  <h2 style="color: var(--rosa); margin-top:0;">O Teu Carrinho</h2>
-  <div id="itens-carrinho">O carrinho está vazio ✨</div>
-  <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-  
-  <label><strong>Teu Nome:</strong></label>
-  <input type="text" id="cliente" placeholder="Como te chamas?">
-  
-  <label><strong>Método de Entrega:</strong></label>
-  <select id="envio">
-    <option value="Levantamento em Mão">Levantamento em Mão</option>
-    <option value="Envio CTT (Correio Normal)">Envio CTT (Correio Normal)</option>
-    <option value="Envio CTT (Correio Registado)">Envio CTT (Correio Registado)</option>
-  </select>
-  
-  <button onclick="finalizar()" class="btn-w">Finalizar no WhatsApp</button>
-</div>
+h1 {
+  text-align:center;
+  color:var(--rosa);
+  font-family:serif;
+}
 
-<script>
-  // O teu link do SheetDB já está aqui configurado!
-  const API = 'https://sheetdb.io/api/v1/rfqtnc19zz2d2';
+/* Pesquisa */
+.search {
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  margin-bottom:10px;
+}
 
-  let db = []; 
-  let cart = [];
+/* Tabs */
+.tabs {
+  display:flex;
+  overflow-x:auto;
+  gap:5px;
+  margin-bottom:10px;
+}
 
-  // Ir buscar os produtos ao teu Google Sheets
-  fetch(API).then(r => r.json()).then(data => {
-    db = data;
-    let h = "";
-    db.forEach((p, i) => {
-      h += `
-      <div class="card">
-        <img src="${p.img}" class="img-p" onerror="this.src='https://via.placeholder.com/400x300?text=Miminhos+da+Mi'">
-        <div class="info">
-          <h3 style="margin:0 0 10px 0;">${p.nome}</h3>
-          <p style="color:var(--dourado); font-weight:bold; font-size:1.2em; margin:0 0 15px 0;">${p.preco}€</p>
-          <button class="btn-add" onclick="add(${i})">Adicionar ao Carrinho</button>
-        </div>
-      </div>`;
-    });
-    document.getElementById('loja').innerHTML = h;
-  }).catch(err => {
-    document.getElementById('loja').innerHTML = "Erro ao carregar produtos. Verifica se a folha está partilhada corretamente.";
-  });
+.tab {
+  padding:8px 12px;
+  background:#eee;
+  border-radius:10px;
+  cursor:pointer;
+  white-space:nowrap;
+}
 
-  function add(i) {
-    cart.push(db[i]);
-    atualizarCarrinho();
-  }
+.tab.active {
+  background:var(--rosa);
+  color:white;
+}
 
-  function atualizarCarrinho() {
-    let h = ""; 
-    let t = 0;
-    cart.forEach(item => {
-      h += `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-              <span>${item.nome}</span>
-              <strong>${item.preco}€</strong>
-            </div>`;
-      t += parseFloat(item.preco);
-    });
-    document.getElementById('itens-carrinho').innerHTML = h + 
-      `<div style="text-align:right; font-weight:bold; margin-top:10px; color:var(--rosa); font-size:1.1em;">Total: ${t.toFixed(2)}€</div>`;
-  }
+/* Cards */
+.card {
+  background:white;
+  border-radius:15px;
+  margin-bottom:20px;
+  overflow:hidden;
+  box-shadow:0 6px 10px rgba(0,0,0,0.08);
+  transition:0.2s;
+}
 
-  function finalizar() {
-    let n = document.getElementById('cliente').value;
-    let e = document.getElementById('envio').value;
-    
-    if(cart.length == 0) return alert("O carrinho está vazio!");
-    if(!n) return alert("Por favor, diz-nos o teu nome.");
+.card:hover {
+  transform:scale(1.02);
+}
 
-    let m = `*Novo Pedido - Miminhos da Mi*%0A%0A`;
-    m += `*Cliente:* ${n}%0A`;
-    m += `*Entrega:* ${e}%0A%0A`;
-    m += `*Produtos:*%0A`;
-    
-    let t = 0;
-    cart.forEach(p => { 
-      m += `- ${p.nome} (${p.preco}€)%0A`; 
-      t += parseFloat(p.preco); 
-    });
-    
-    m += `%0A*Total: ${t.toFixed(2)}€*`;
-    
-    // Abre o WhatsApp com a tua mensagem
-    window.open(`https://wa.me/351938655760?text=${m}`);
-  }
-</script>
-</body>
-</html>
+.img-p {
+  width:100%;
+  height:230px;
+  object-fit:cover;
+}
+
+.info {
+  padding:15px;
+  text-align:center;
+}
+
+.btn-add {
+  background:var(--rosa);
+  color:white;
+  border:none;
+  padding:10px;
+  width:100%;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+/* Carrinho */
+.carrinho {
+  background:white;
+  padding:20px;
+  border-radius:15px;
+  margin-top:30px;
+}
+
+.item-cart {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
+}
+
+.qtd {
+  display:flex;
+  gap:5px;
+}
+
+.qtd button {
+  border:none;
+  background:#eee;
+  padding:5px 8px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.remove {
+  color:red;
+  cursor:pointer;
+  font-size:0.9em;
+}
+
+.btn-w {
+  background:#25D366;
+  color:white;
+  border:none;
+  padding:15px;
+  width
