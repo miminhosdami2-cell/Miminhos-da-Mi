@@ -145,7 +145,12 @@ function guardar(){
 
 // FETCH
 fetch(API).then(r=>r.json()).then(data=>{
-  db = data.map(p=>({...p, categoria:p.categoria||"Outros"}));
+  db = data.map((p,i)=>({
+    ...p,
+    id:i,
+    categoria:p.categoria||"Outros"
+  }));
+
   let categorias = [...new Set(db.map(p=>p.categoria))];
 
   let tabs="";
@@ -173,7 +178,6 @@ function renderProdutos(){
 
   db.filter(p=>p.categoria==categoriaAtual && p.nome.toLowerCase().includes(termo))
   .forEach(p=>{
-    let i = db.indexOf(p);
     let fav = favs.includes(p.nome) ? "❤️" : "🤍";
 
     h+=`
@@ -183,9 +187,9 @@ function renderProdutos(){
         <img src="${p.img}" class="img-p" onclick="abrirImg('${p.img}')">
       </div>
       <div class="info">
-        <h3>#${i} - ${p.nome}</h3>
+        <h3>#${p.id} - ${p.nome}</h3>
         <p>${p.preco}€</p>
-        <button class="btn-add" onclick="add(${i})">Adicionar</button>
+        <button class="btn-add" onclick="add(${p.id})">Adicionar</button>
       </div>
     </div>`;
   });
@@ -214,10 +218,13 @@ function fecharModal(){
 }
 
 // CARRINHO
-function add(i){
-  let ex = cart.find(p=>p.nome==db[i].nome);
+function add(id){
+  let produto = db.find(p=>p.id===id);
+  let ex = cart.find(p=>p.id===id);
+
   if(ex) ex.qtd++;
-  else cart.push({...db[i], qtd:1});
+  else cart.push({...produto, qtd:1});
+
   guardar();
   atualizar();
 }
@@ -247,7 +254,7 @@ function atualizar(){
 
     h+=`
     <div class="item-cart">
-      <span>${p.nome} x${p.qtd}</span>
+      <span>#${p.id} - ${p.nome} x${p.qtd}</span>
       <div>
         <button onclick="menos(${i})">➖</button>
         <button onclick="mais(${i})">➕</button>
@@ -262,7 +269,7 @@ function atualizar(){
   document.getElementById('portes').innerText = "Portes: " + envio + "€";
 }
 
-// GERAR TEXTO
+// TEXTO
 function gerarTexto(){
   let n = document.getElementById('cliente').value;
   let t = document.getElementById('telefone').value;
@@ -273,7 +280,7 @@ function gerarTexto(){
   msg += `Tel: ${t}%0A`;
 
   cart.forEach(p=>{
-    msg+=`${p.nome} x${p.qtd}%0A`;
+    msg+=`#${p.id} - ${p.nome} x${p.qtd}%0A`;
   });
 
   msg += `Morada: ${m}`;
