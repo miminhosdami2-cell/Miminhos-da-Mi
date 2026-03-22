@@ -2,15 +2,11 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<title>Miminhos da Mi</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miminhos da Mi</title>
 
 <style>
-:root {
-  --rosa:#db2777;
-  --fundo:#fff5f7;
-  --dourado:#b45309;
-}
+:root { --rosa:#db2777; --fundo:#fff5f7; }
 
 body {
   font-family:sans-serif;
@@ -20,119 +16,70 @@ body {
   background:var(--fundo);
 }
 
-h1 {
-  text-align:center;
-  color:var(--rosa);
-  font-family:serif;
-}
+h1 { text-align:center; color:var(--rosa); }
 
-/* Pesquisa */
 .search {
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #ddd;
-  margin-bottom:10px;
+  width:100%; padding:10px; border-radius:10px;
+  border:1px solid #ddd; margin-bottom:10px;
 }
 
-/* Tabs */
-.tabs {
-  display:flex;
-  overflow-x:auto;
-  gap:5px;
-  margin-bottom:10px;
-}
+.tabs { display:flex; gap:5px; overflow:auto; margin-bottom:10px; }
+.tab { padding:8px 12px; background:#eee; border-radius:10px; cursor:pointer; }
+.tab.active { background:var(--rosa); color:white; }
 
-.tab {
-  padding:8px 12px;
-  background:#eee;
-  border-radius:10px;
-  cursor:pointer;
-  white-space:nowrap;
-}
-
-.tab.active {
-  background:var(--rosa);
-  color:white;
-}
-
-/* Cards */
 .card {
-  background:white;
-  border-radius:15px;
-  margin-bottom:20px;
-  overflow:hidden;
-  box-shadow:0 6px 10px rgba(0,0,0,0.08);
-  transition:0.2s;
+  background:white; border-radius:15px;
+  margin-bottom:20px; overflow:hidden;
 }
 
-.card:hover {
-  transform:scale(1.02);
-}
+.img-p { width:100%; height:220px; object-fit:cover; cursor:pointer; }
 
-.img-p {
-  width:100%;
-  height:230px;
-  object-fit:cover;
-}
-
-.info {
-  padding:15px;
-  text-align:center;
-}
+.info { padding:15px; text-align:center; }
 
 .btn-add {
-  background:var(--rosa);
-  color:white;
-  border:none;
-  padding:10px;
-  width:100%;
+  background:var(--rosa); color:white;
+  border:none; padding:10px; width:100%;
   border-radius:10px;
-  font-weight:bold;
+}
+
+.fav {
+  position:absolute;
+  right:10px;
+  top:10px;
+  font-size:20px;
   cursor:pointer;
 }
 
-/* Carrinho */
+.card-wrap { position:relative; }
+
+.modal {
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,0.8);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.modal img {
+  max-width:90%;
+  border-radius:10px;
+}
+
 .carrinho {
   background:white;
-  padding:20px;
+  padding:15px;
   border-radius:15px;
-  margin-top:30px;
-}
-
-.item-cart {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:8px;
-}
-
-.qtd {
-  display:flex;
-  gap:5px;
-}
-
-.qtd button {
-  border:none;
-  background:#eee;
-  padding:5px 8px;
-  border-radius:6px;
-  cursor:pointer;
-}
-
-.remove {
-  color:red;
-  cursor:pointer;
-  font-size:0.9em;
 }
 
 .btn-w {
   background:#25D366;
   color:white;
-  border:none;
   padding:15px;
+  border:none;
   width:100%;
-  border-radius:12px;
+  border-radius:10px;
   margin-top:10px;
 }
 </style>
@@ -148,21 +95,28 @@ h1 {
 <div id="loja"></div>
 
 <div class="carrinho">
-  <h2 style="color:var(--rosa)">Carrinho</h2>
+  <h2>Carrinho</h2>
 
   <p>💳 MBWay: <strong>938655760</strong></p>
 
-  <div id="itens-carrinho">Vazio ✨</div>
+  <div id="itens-carrinho"></div>
 
-  <input type="text" id="cliente" placeholder="Teu nome">
+  <p id="portes"></p>
 
-  <select id="envio">
-    <option>Levantamento em Mão</option>
-    <option>Envio CTT Normal</option>
-    <option>Envio CTT Registado</option>
+  <input id="cliente" placeholder="Nome">
+
+  <select id="envio" onchange="calcularPortes()">
+    <option value="0">Levantamento</option>
+    <option value="2">CTT Normal (+2€)</option>
+    <option value="4">CTT Registado (+4€)</option>
   </select>
 
-  <button onclick="finalizar()" class="btn-w">Finalizar no WhatsApp</button>
+  <button onclick="finalizar()" class="btn-w">WhatsApp</button>
+  <button onclick="mbway()" class="btn-w" style="background:#555;">Pagar MBWay</button>
+</div>
+
+<div class="modal" id="modal" onclick="fecharModal()">
+  <img id="imgGrande">
 </div>
 
 <script>
@@ -170,144 +124,126 @@ const API = 'https://sheetdb.io/api/v1/rfqtnc19zz2d2';
 
 let db = [];
 let cart = [];
+let favs = JSON.parse(localStorage.getItem("favs")) || [];
 let categoriaAtual = "";
 
-// Fetch produtos
-fetch(API)
-.then(r=>r.json())
-.then(data=>{
-  db = data;
+// FETCH
+fetch(API).then(r=>r.json()).then(data=>{
+  db = data.map(p=>({...p, categoria:p.categoria||"Outros"}));
 
   let categorias = [...new Set(db.map(p=>p.categoria))];
 
-  let tabsHTML="";
+  let tabs="";
   categorias.forEach((c,i)=>{
-    tabsHTML += `<div class="tab ${i==0?'active':''}" onclick="mudarCategoria('${c}', this)">${c}</div>`;
+    tabs+=`<div class="tab ${i==0?'active':''}" onclick="mudar('${c}',this)">${c}</div>`;
   });
 
-  document.getElementById('tabs').innerHTML = tabsHTML;
-
+  document.getElementById('tabs').innerHTML = tabs;
   categoriaAtual = categorias[0];
   renderProdutos();
 });
 
-// Trocar categoria
-function mudarCategoria(cat, el){
-  categoriaAtual = cat;
+function mudar(c,el){
+  categoriaAtual=c;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   renderProdutos();
 }
 
-// Render produtos
+// PRODUTOS
 function renderProdutos(){
   let termo = document.getElementById('pesquisa').value.toLowerCase();
   let h="";
 
-  db.filter(p =>
-    p.categoria===categoriaAtual &&
-    p.nome.toLowerCase().includes(termo)
-  ).forEach(p=>{
+  db.filter(p=>p.categoria==categoriaAtual && p.nome.toLowerCase().includes(termo))
+  .forEach(p=>{
     let i = db.indexOf(p);
+    let fav = favs.includes(p.nome) ? "❤️" : "🤍";
 
-    h += `
+    h+=`
     <div class="card">
-      <img src="${p.img}" class="img-p">
+      <div class="card-wrap">
+        <span class="fav" onclick="toggleFav('${p.nome}')">${fav}</span>
+        <img src="${p.img}" class="img-p" onclick="abrirImg('${p.img}')">
+      </div>
       <div class="info">
         <h3>${p.nome}</h3>
-        <p style="color:var(--dourado); font-weight:bold">${p.preco}€</p>
+        <p>${p.preco}€</p>
         <button class="btn-add" onclick="add(${i})">Adicionar</button>
       </div>
     </div>`;
   });
 
-  document.getElementById('loja').innerHTML = h || "Sem resultados ✨";
+  document.getElementById('loja').innerHTML = h;
 }
 
-// Adicionar
-function add(i){
-  let existente = cart.find(p=>p.nome===db[i].nome);
-
-  if(existente){
-    existente.qtd++;
+// FAVORITOS
+function toggleFav(nome){
+  if(favs.includes(nome)){
+    favs = favs.filter(f=>f!==nome);
   } else {
-    cart.push({...db[i], qtd:1});
+    favs.push(nome);
   }
-
-  atualizarCarrinho();
+  localStorage.setItem("favs", JSON.stringify(favs));
+  renderProdutos();
 }
 
-// Atualizar carrinho
-function atualizarCarrinho(){
-  let h="";
-  let total=0;
-
-  cart.forEach((p,i)=>{
-    let sub = p.qtd * parseFloat(p.preco);
-    total += sub;
-
-    h += `
-    <div class="item-cart">
-      <div>
-        <strong>${p.nome}</strong><br>
-        ${sub.toFixed(2)}€
-      </div>
-
-      <div class="qtd">
-        <button onclick="menos(${i})">-</button>
-        <span>${p.qtd}</span>
-        <button onclick="mais(${i})">+</button>
-      </div>
-
-      <div class="remove" onclick="remover(${i})">✕</div>
-    </div>`;
-  });
-
-  document.getElementById('itens-carrinho').innerHTML =
-    h + `<hr><strong>Total: ${total.toFixed(2)}€</strong>`;
+// IMAGEM GRANDE
+function abrirImg(src){
+  document.getElementById('modal').style.display="flex";
+  document.getElementById('imgGrande').src=src;
 }
 
-// Quantidade
-function mais(i){
-  cart[i].qtd++;
-  atualizarCarrinho();
+function fecharModal(){
+  document.getElementById('modal').style.display="none";
 }
 
-function menos(i){
-  cart[i].qtd--;
-  if(cart[i].qtd<=0) cart.splice(i,1);
-  atualizarCarrinho();
+// CARRINHO
+function add(i){
+  let ex = cart.find(p=>p.nome==db[i].nome);
+  if(ex) ex.qtd++;
+  else cart.push({...db[i], qtd:1});
+  atualizar();
 }
 
-// Remover
-function remover(i){
-  cart.splice(i,1);
-  atualizarCarrinho();
-}
-
-// Finalizar
-function finalizar(){
-  let n = document.getElementById('cliente').value;
-  let e = document.getElementById('envio').value;
-
-  if(cart.length==0) return alert("Carrinho vazio!");
-  if(!n) return alert("Indica o nome!");
-
-  let msg = `Novo Pedido%0A%0ACliente: ${n}%0AEntrega: ${e}%0A%0A`;
-
-  let total=0;
+function atualizar(){
+  let h=""; let total=0;
 
   cart.forEach(p=>{
-    let sub = p.qtd * parseFloat(p.preco);
-    msg += `- ${p.nome} x${p.qtd} (${sub.toFixed(2)}€)%0A`;
+    let sub = p.qtd * p.preco;
     total += sub;
+    h+=`${p.nome} x${p.qtd} = ${sub}€<br>`;
   });
 
-  msg += `%0ATotal: ${total.toFixed(2)}€`;
+  let envio = parseFloat(document.getElementById('envio').value);
+  total += envio;
+
+  document.getElementById('itens-carrinho').innerHTML = h + `<hr>Total: ${total.toFixed(2)}€`;
+  document.getElementById('portes').innerText = "Portes: " + envio + "€";
+}
+
+function calcularPortes(){
+  atualizar();
+}
+
+// WHATSAPP
+function finalizar(){
+  let n = document.getElementById('cliente').value;
+  if(!n) return alert("Nome!");
+
+  let msg = `Pedido - ${n}%0A`;
+  cart.forEach(p=>{
+    msg+=`${p.nome} x${p.qtd}%0A`;
+  });
 
   window.open(`https://wa.me/351938655760?text=${msg}`);
+}
+
+// MBWAY
+function mbway(){
+  alert("Faz pagamento para 938655760 e envia comprovativo 😊");
 }
 </script>
 
 </body>
-</html>  
+</html> 
