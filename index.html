@@ -131,4 +131,183 @@ h1 {
   color:white;
   border:none;
   padding:15px;
-  width
+  width:100%;
+  border-radius:12px;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Miminhos da Mi ✨</h1>
+
+<input class="search" id="pesquisa" placeholder="🔍 Procurar..." oninput="renderProdutos()">
+
+<div class="tabs" id="tabs"></div>
+<div id="loja"></div>
+
+<div class="carrinho">
+  <h2 style="color:var(--rosa)">Carrinho</h2>
+
+  <p>💳 MBWay: <strong>938655760</strong></p>
+
+  <div id="itens-carrinho">Vazio ✨</div>
+
+  <input type="text" id="cliente" placeholder="Teu nome">
+
+  <select id="envio">
+    <option>Levantamento em Mão</option>
+    <option>Envio CTT Normal</option>
+    <option>Envio CTT Registado</option>
+  </select>
+
+  <button onclick="finalizar()" class="btn-w">Finalizar no WhatsApp</button>
+</div>
+
+<script>
+const API = 'https://sheetdb.io/api/v1/rfqtnc19zz2d2';
+
+let db = [];
+let cart = [];
+let categoriaAtual = "";
+
+// Fetch produtos
+fetch(API)
+.then(r=>r.json())
+.then(data=>{
+  db = data;
+
+  let categorias = [...new Set(db.map(p=>p.categoria))];
+
+  let tabsHTML="";
+  categorias.forEach((c,i)=>{
+    tabsHTML += `<div class="tab ${i==0?'active':''}" onclick="mudarCategoria('${c}', this)">${c}</div>`;
+  });
+
+  document.getElementById('tabs').innerHTML = tabsHTML;
+
+  categoriaAtual = categorias[0];
+  renderProdutos();
+});
+
+// Trocar categoria
+function mudarCategoria(cat, el){
+  categoriaAtual = cat;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderProdutos();
+}
+
+// Render produtos
+function renderProdutos(){
+  let termo = document.getElementById('pesquisa').value.toLowerCase();
+  let h="";
+
+  db.filter(p =>
+    p.categoria===categoriaAtual &&
+    p.nome.toLowerCase().includes(termo)
+  ).forEach(p=>{
+    let i = db.indexOf(p);
+
+    h += `
+    <div class="card">
+      <img src="${p.img}" class="img-p">
+      <div class="info">
+        <h3>${p.nome}</h3>
+        <p style="color:var(--dourado); font-weight:bold">${p.preco}€</p>
+        <button class="btn-add" onclick="add(${i})">Adicionar</button>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('loja').innerHTML = h || "Sem resultados ✨";
+}
+
+// Adicionar
+function add(i){
+  let existente = cart.find(p=>p.nome===db[i].nome);
+
+  if(existente){
+    existente.qtd++;
+  } else {
+    cart.push({...db[i], qtd:1});
+  }
+
+  atualizarCarrinho();
+}
+
+// Atualizar carrinho
+function atualizarCarrinho(){
+  let h="";
+  let total=0;
+
+  cart.forEach((p,i)=>{
+    let sub = p.qtd * parseFloat(p.preco);
+    total += sub;
+
+    h += `
+    <div class="item-cart">
+      <div>
+        <strong>${p.nome}</strong><br>
+        ${sub.toFixed(2)}€
+      </div>
+
+      <div class="qtd">
+        <button onclick="menos(${i})">-</button>
+        <span>${p.qtd}</span>
+        <button onclick="mais(${i})">+</button>
+      </div>
+
+      <div class="remove" onclick="remover(${i})">✕</div>
+    </div>`;
+  });
+
+  document.getElementById('itens-carrinho').innerHTML =
+    h + `<hr><strong>Total: ${total.toFixed(2)}€</strong>`;
+}
+
+// Quantidade
+function mais(i){
+  cart[i].qtd++;
+  atualizarCarrinho();
+}
+
+function menos(i){
+  cart[i].qtd--;
+  if(cart[i].qtd<=0) cart.splice(i,1);
+  atualizarCarrinho();
+}
+
+// Remover
+function remover(i){
+  cart.splice(i,1);
+  atualizarCarrinho();
+}
+
+// Finalizar
+function finalizar(){
+  let n = document.getElementById('cliente').value;
+  let e = document.getElementById('envio').value;
+
+  if(cart.length==0) return alert("Carrinho vazio!");
+  if(!n) return alert("Indica o nome!");
+
+  let msg = `Novo Pedido%0A%0ACliente: ${n}%0AEntrega: ${e}%0A%0A`;
+
+  let total=0;
+
+  cart.forEach(p=>{
+    let sub = p.qtd * parseFloat(p.preco);
+    msg += `- ${p.nome} x${p.qtd} (${sub.toFixed(2)}€)%0A`;
+    total += sub;
+  });
+
+  msg += `%0ATotal: ${total.toFixed(2)}€`;
+
+  window.open(`https://wa.me/351938655760?text=${msg}`);
+}
+</script>
+
+</body>
+</html>  
