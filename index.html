@@ -138,12 +138,12 @@ let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let favs = JSON.parse(localStorage.getItem("favs")) || [];
 let categoriaAtual = "";
 
-// GUARDAR
+// guardar carrinho
 function guardar(){
   localStorage.setItem("cart", JSON.stringify(cart));
 }
 
-// FETCH
+// carregar produtos
 fetch(API).then(r=>r.json()).then(data=>{
   db = data.map((p,i)=>({
     ...p,
@@ -171,7 +171,7 @@ function mudar(c,el){
   renderProdutos();
 }
 
-// PRODUTOS
+// mostrar produtos
 function renderProdutos(){
   let termo = document.getElementById('pesquisa').value.toLowerCase();
   let h="";
@@ -197,7 +197,7 @@ function renderProdutos(){
   document.getElementById('loja').innerHTML = h;
 }
 
-// FAVORITOS
+// favoritos
 function toggleFav(nome){
   if(favs.includes(nome)){
     favs = favs.filter(f=>f!==nome);
@@ -208,7 +208,7 @@ function toggleFav(nome){
   renderProdutos();
 }
 
-// IMAGEM
+// imagem
 function abrirImg(src){
   document.getElementById('modal').style.display="flex";
   document.getElementById('imgGrande').src=src;
@@ -217,7 +217,7 @@ function fecharModal(){
   document.getElementById('modal').style.display="none";
 }
 
-// CARRINHO
+// carrinho
 function add(id){
   let produto = db.find(p=>p.id===id);
   let ex = cart.find(p=>p.id===id);
@@ -230,6 +230,7 @@ function add(id){
 }
 
 function mais(i){ cart[i].qtd++; guardar(); atualizar(); }
+
 function menos(i){
   cart[i].qtd--;
   if(cart[i].qtd<=0) cart.splice(i,1);
@@ -269,37 +270,50 @@ function atualizar(){
   document.getElementById('portes').innerText = "Portes: " + envio + "€";
 }
 
-// TEXTO
+function calcularPortes(){
+  atualizar();
+}
+
+// gerar texto CORRIGIDO
 function gerarTexto(){
   let n = document.getElementById('cliente').value;
   let t = document.getElementById('telefone').value;
   let m = document.getElementById('morada').value;
 
-  let msg = `Pedido%0A`;
-  msg += `Nome: ${n}%0A`;
-  msg += `Tel: ${t}%0A`;
+  if(cart.length === 0){
+    alert("Carrinho vazio!");
+    return "";
+  }
+
+  let msg = "Pedido\n";
+  msg += "Nome: " + n + "\n";
+  msg += "Tel: " + t + "\n\n";
 
   cart.forEach(p=>{
-    msg+=`#${p.id} - ${p.nome} x${p.qtd}%0A`;
+    msg += "#" + p.id + " - " + p.nome + " x" + p.qtd + "\n";
   });
 
-  msg += `Morada: ${m}`;
-  return msg;
+  msg += "\nMorada: " + m;
+
+  return encodeURIComponent(msg);
 }
 
-// WHATSAPP
+// whatsapp
 function finalizar(){
-  window.open(`https://wa.me/351938655760?text=${gerarTexto()}`);
+  let texto = gerarTexto();
+  if(!texto) return;
+
+  window.open(`https://wa.me/351938655760?text=${texto}`);
 }
 
-// COPIAR
+// copiar
 function copiar(){
   let texto = decodeURIComponent(gerarTexto());
   navigator.clipboard.writeText(texto);
   alert("Pedido copiado!");
 }
 
-// MBWAY
+// mbway
 function mbway(){
   alert("Paga para 938655760 e envia comprovativo 😊");
 }
