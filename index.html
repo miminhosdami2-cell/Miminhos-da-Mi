@@ -76,11 +76,18 @@ h1 { text-align:center; color:var(--rosa); }
 .btn-w {
   background:#25D366;
   color:white;
-  padding:15px;
+  padding:12px;
   border:none;
   width:100%;
   border-radius:10px;
-  margin-top:10px;
+  margin-top:8px;
+}
+
+.item-cart {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:5px;
 }
 </style>
 </head>
@@ -104,6 +111,8 @@ h1 { text-align:center; color:var(--rosa); }
   <p id="portes"></p>
 
   <input id="cliente" placeholder="Nome">
+  <input id="telefone" placeholder="Telefone">
+  <input id="morada" placeholder="Morada de envio">
 
   <select id="envio" onchange="calcularPortes()">
     <option value="0">Levantamento</option>
@@ -112,7 +121,9 @@ h1 { text-align:center; color:var(--rosa); }
   </select>
 
   <button onclick="finalizar()" class="btn-w">WhatsApp</button>
+  <button onclick="copiar()" class="btn-w" style="background:#111;">Copiar Pedido</button>
   <button onclick="mbway()" class="btn-w" style="background:#555;">Pagar MBWay</button>
+  <button onclick="limparCarrinho()" class="btn-w" style="background:#dc2626;">❌ Anular Pedido</button>
 </div>
 
 <div class="modal" id="modal" onclick="fecharModal()">
@@ -123,14 +134,18 @@ h1 { text-align:center; color:var(--rosa); }
 const API = 'https://sheetdb.io/api/v1/rfqtnc19zz2d2';
 
 let db = [];
-let cart = [];
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let favs = JSON.parse(localStorage.getItem("favs")) || [];
 let categoriaAtual = "";
+
+// GUARDAR
+function guardar(){
+  localStorage.setItem("cart", JSON.stringify(cart));
+}
 
 // FETCH
 fetch(API).then(r=>r.json()).then(data=>{
   db = data.map(p=>({...p, categoria:p.categoria||"Outros"}));
-
   let categorias = [...new Set(db.map(p=>p.categoria))];
 
   let tabs="";
@@ -141,6 +156,7 @@ fetch(API).then(r=>r.json()).then(data=>{
   document.getElementById('tabs').innerHTML = tabs;
   categoriaAtual = categorias[0];
   renderProdutos();
+  atualizar();
 });
 
 function mudar(c,el){
@@ -167,7 +183,7 @@ function renderProdutos(){
         <img src="${p.img}" class="img-p" onclick="abrirImg('${p.img}')">
       </div>
       <div class="info">
-        <h3>${p.nome}</h3>
+        <h3>#${i} - ${p.nome}</h3>
         <p>${p.preco}€</p>
         <button class="btn-add" onclick="add(${i})">Adicionar</button>
       </div>
@@ -188,12 +204,11 @@ function toggleFav(nome){
   renderProdutos();
 }
 
-// IMAGEM GRANDE
+// IMAGEM
 function abrirImg(src){
   document.getElementById('modal').style.display="flex";
   document.getElementById('imgGrande').src=src;
 }
-
 function fecharModal(){
   document.getElementById('modal').style.display="none";
 }
@@ -203,16 +218,41 @@ function add(i){
   let ex = cart.find(p=>p.nome==db[i].nome);
   if(ex) ex.qtd++;
   else cart.push({...db[i], qtd:1});
+  guardar();
   atualizar();
+}
+
+function mais(i){ cart[i].qtd++; guardar(); atualizar(); }
+function menos(i){
+  cart[i].qtd--;
+  if(cart[i].qtd<=0) cart.splice(i,1);
+  guardar();
+  atualizar();
+}
+
+function limparCarrinho(){
+  if(confirm("Anular pedido?")){
+    cart=[];
+    guardar();
+    atualizar();
+  }
 }
 
 function atualizar(){
   let h=""; let total=0;
 
-  cart.forEach(p=>{
+  cart.forEach((p,i)=>{
     let sub = p.qtd * p.preco;
-    total += sub;
-    h+=`${p.nome} x${p.qtd} = ${sub}€<br>`;
+    total+=sub;
+
+    h+=`
+    <div class="item-cart">
+      <span>${p.nome} x${p.qtd}</span>
+      <div>
+        <button onclick="menos(${i})">➖</button>
+        <button onclick="mais(${i})">➕</button>
+      </div>
+    </div>`;
   });
 
   let envio = parseFloat(document.getElementById('envio').value);
@@ -222,28 +262,41 @@ function atualizar(){
   document.getElementById('portes').innerText = "Portes: " + envio + "€";
 }
 
-function calcularPortes(){
-  atualizar();
-}
-
-// WHATSAPP
-function finalizar(){
+// GERAR TEXTO
+function gerarTexto(){
   let n = document.getElementById('cliente').value;
-  if(!n) return alert("Nome!");
+  let t = document.getElementById('telefone').value;
+  let m = document.getElementById('morada').value;
 
-  let msg = `Pedido - ${n}%0A`;
+  let msg = `Pedido%0A`;
+  msg += `Nome: ${n}%0A`;
+  msg += `Tel: ${t}%0A`;
+
   cart.forEach(p=>{
     msg+=`${p.nome} x${p.qtd}%0A`;
   });
 
-  window.open(`https://wa.me/351938655760?text=${msg}`);
+  msg += `Morada: ${m}`;
+  return msg;
+}
+
+// WHATSAPP
+function finalizar(){
+  window.open(`https://wa.me/351938655760?text=${gerarTexto()}`);
+}
+
+// COPIAR
+function copiar(){
+  let texto = decodeURIComponent(gerarTexto());
+  navigator.clipboard.writeText(texto);
+  alert("Pedido copiado!");
 }
 
 // MBWAY
 function mbway(){
-  alert("Faz pagamento para 938655760 e envia comprovativo 😊");
+  alert("Paga para 938655760 e envia comprovativo 😊");
 }
 </script>
 
 </body>
-</html> 
+</html>
