@@ -4,106 +4,114 @@
   <meta charset="UTF-8">
   <title>Miminhos da Mi</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root { --rosa: #db2777; --fundo: #fff5f7; --dourado: #b45309; }
+    body { font-family: sans-serif; max-width: 450px; margin: auto; padding: 15px; background: var(--fundo); color: #333; }
+    h1 { text-align: center; color: var(--rosa); font-family: serif; margin-bottom: 5px; }
+    .subtitle { text-align: center; font-size: 0.9em; color: #6b7280; margin-bottom: 20px; }
+    .card { background: white; border-radius: 15px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .img-p { width: 100%; height: 250px; object-fit: cover; background: #eee; }
+    .info { padding: 15px; text-align: center; }
+    .btn-add { background: var(--rosa); color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    .carrinho { background: white; padding: 20px; border-radius: 15px; margin-top: 30px; border: 1px solid #eee; }
+    input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 1em; }
+    .btn-w { background: #25D366; color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; font-size: 1.1em; cursor: pointer; margin-top: 10px; }
+  </style>
 </head>
+<body>
 
-<body style="font-family: Arial; max-width: 400px; margin: auto; padding: 10px; background:#f5f5f5;">
+<h1>Miminhos da Mi ✨</h1>
+<p class="subtitle">Peças feitas com amor</p>
 
-<h1 style="text-align:center;">Miminhos da Mi</h1>
+<div id="loja">A carregar mimos...</div>
 
-<h2>Produtos</h2>
-<div id="produtos"></div>
-
-<h2>Carrinho</h2>
-<div id="carrinho"></div>
-
-<h3>Nome do Cliente</h3>
-<input id="nomeCliente" placeholder="O teu nome" style="width:100%; padding:8px; margin-bottom:10px;">
-
-<button onclick="enviar()" style="width:100%; padding:12px; background:green; color:white; border:none; border-radius:10px; font-size:16px;">
-Finalizar via WhatsApp
-</button>
+<div class="carrinho">
+  <h2 style="color: var(--rosa); margin-top:0;">O Teu Carrinho</h2>
+  <div id="itens-carrinho">O carrinho está vazio ✨</div>
+  <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+  
+  <label><strong>Teu Nome:</strong></label>
+  <input type="text" id="cliente" placeholder="Como te chamas?">
+  
+  <label><strong>Método de Entrega:</strong></label>
+  <select id="envio">
+    <option value="Levantamento em Mão">Levantamento em Mão</option>
+    <option value="Envio CTT (Correio Normal)">Envio CTT (Correio Normal)</option>
+    <option value="Envio CTT (Correio Registado)">Envio CTT (Correio Registado)</option>
+  </select>
+  
+  <button onclick="finalizar()" class="btn-w">Finalizar no WhatsApp</button>
+</div>
 
 <script>
-let produtos = [
-  {
-    nome:"Colares",
-    preco:12,
-    img:"LINK_DA_IMAGEM_COLARES"
-  },
-  {
-    nome:"Brincos",
-    preco:3.5,
-    img:"LINK_DA_IMAGEM_BRINCOS"
-  },
-  {
-    nome:"Cristais",
-    preco:2.5,
-    img:"LINK_DA_IMAGEM_CRISTAIS"
-  }
-];
+  // O teu link do SheetDB já está aqui configurado!
+  const API = 'https://sheetdb.io/api/v1/rfqtnc19zz2d2';
 
-let carrinho = [];
+  let db = []; 
+  let cart = [];
 
-function mostrarProdutos(){
-  let html="";
-  produtos.forEach((p,i)=>{
-    html += `
-    <div style="border:1px solid #ddd; margin:8px 0; padding:10px; border-radius:12px; background:white;">
-      
-      <img src="${p.img}" style="width:100%; border-radius:10px;">
-      
-      <h3>${p.nome}</h3>
-      <p><strong>${p.preco}€</strong></p>
-
-      <button onclick="add(${i})"
-        style="background:black; color:white; padding:8px 12px; border:none; border-radius:8px;">
-        Adicionar
-      </button>
-    </div>`;
-  });
-  document.getElementById("produtos").innerHTML = html;
-}
-
-function add(i){
-  carrinho.push(produtos[i]);
-  mostrarCarrinho();
-}
-
-function mostrarCarrinho(){
-  let html="";
-  let total = 0;
-
-  carrinho.forEach(p=>{
-    html += `<div>${p.nome} - ${p.preco}€</div>`;
-    total += p.preco;
+  // Ir buscar os produtos ao teu Google Sheets
+  fetch(API).then(r => r.json()).then(data => {
+    db = data;
+    let h = "";
+    db.forEach((p, i) => {
+      h += `
+      <div class="card">
+        <img src="${p.img}" class="img-p" onerror="this.src='https://via.placeholder.com/400x300?text=Miminhos+da+Mi'">
+        <div class="info">
+          <h3 style="margin:0 0 10px 0;">${p.nome}</h3>
+          <p style="color:var(--dourado); font-weight:bold; font-size:1.2em; margin:0 0 15px 0;">${p.preco}€</p>
+          <button class="btn-add" onclick="add(${i})">Adicionar ao Carrinho</button>
+        </div>
+      </div>`;
+    });
+    document.getElementById('loja').innerHTML = h;
+  }).catch(err => {
+    document.getElementById('loja').innerHTML = "Erro ao carregar produtos. Verifica se a folha está partilhada corretamente.";
   });
 
-  html += `<hr><strong>Total: ${total}€</strong>`;
-  document.getElementById("carrinho").innerHTML = html;
-}
-
-function enviar(){
-  let nome = document.getElementById("nomeCliente").value;
-  let msg="Encomenda:%0A";
-  
-  if(nome){
-    msg += "Cliente: " + nome + "%0A%0A";
+  function add(i) {
+    cart.push(db[i]);
+    atualizarCarrinho();
   }
 
-  let total=0;
+  function atualizarCarrinho() {
+    let h = ""; 
+    let t = 0;
+    cart.forEach(item => {
+      h += `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+              <span>${item.nome}</span>
+              <strong>${item.preco}€</strong>
+            </div>`;
+      t += parseFloat(item.preco);
+    });
+    document.getElementById('itens-carrinho').innerHTML = h + 
+      `<div style="text-align:right; font-weight:bold; margin-top:10px; color:var(--rosa); font-size:1.1em;">Total: ${t.toFixed(2)}€</div>`;
+  }
 
-  carrinho.forEach(p=>{
-    msg += p.nome + " - " + p.preco + "€%0A";
-    total += p.preco;
-  });
+  function finalizar() {
+    let n = document.getElementById('cliente').value;
+    let e = document.getElementById('envio').value;
+    
+    if(cart.length == 0) return alert("O carrinho está vazio!");
+    if(!n) return alert("Por favor, diz-nos o teu nome.");
 
-  msg += "%0ATotal: " + total + "€";
-
-  window.open("https://wa.me/351938655760?text=" + msg);
-}
-
-mostrarProdutos();
+    let m = `*Novo Pedido - Miminhos da Mi*%0A%0A`;
+    m += `*Cliente:* ${n}%0A`;
+    m += `*Entrega:* ${e}%0A%0A`;
+    m += `*Produtos:*%0A`;
+    
+    let t = 0;
+    cart.forEach(p => { 
+      m += `- ${p.nome} (${p.preco}€)%0A`; 
+      t += parseFloat(p.preco); 
+    });
+    
+    m += `%0A*Total: ${t.toFixed(2)}€*`;
+    
+    // Abre o WhatsApp com a tua mensagem
+    window.open(`https://wa.me/351938655760?text=${m}`);
+  }
 </script>
-
 </body>
 </html>
