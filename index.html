@@ -16,7 +16,26 @@ body {
   background:var(--fundo);
 }
 
-h1 { text-align:center; color:var(--rosa); }
+h1 {
+  text-align:center;
+  margin-bottom:10px;
+}
+
+h1 .logo {
+  max-width: 200px;
+  width: 100%;
+  height: auto;
+  border-radius: 15px;
+  display:block;
+  margin:0 auto;
+}
+
+h1 .titulo {
+  margin-top:8px;
+  color:var(--rosa);
+  font-size:24px;
+  font-weight:bold;
+}
 
 .search {
   width:100%; padding:10px; border-radius:10px;
@@ -138,7 +157,10 @@ input, select {
 
 <body>
 
-<h1>Miminhos da Mi ✨</h1>
+<h1>
+  <img src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZKlpyCClVfulyZNfqhpgnfmwI1HCOQACciUAAqaPQVa6pq29Ec1o2DoE.jpg" alt="Miminhos da Mi" class="logo">
+  <div class="titulo">Miminhos da Mi ✨</div>
+</h1>
 
 <input class="search" id="pesquisa" placeholder="🔍 Procurar..." oninput="irParaPagina(1)">
 
