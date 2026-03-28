@@ -5,157 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Miminhos da Mi</title>
 
-<!-- Fonte Edwardian Script ITC via Google Fonts alternativa (Great Vibes similar) -->
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 
 <style>
 :root { --rosa:#db2777; --fundo:#fff5f7; }
 
-body {
-  font-family:sans-serif;
-  max-width:450px;
-  margin:auto;
-  padding:15px;
-  background:var(--fundo);
-}
+body { font-family:sans-serif; max-width:450px; margin:auto; padding:15px; background:var(--fundo); }
 
-h1 {
-  text-align:center;
-  margin-bottom:10px;
-}
+h1 { text-align:center; margin-bottom:10px; }
+h1 .logo { max-width:150px; width:100%; height:auto; border-radius:15px; display:block; margin:0 auto; }
+h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:normal; font-family:'Great Vibes', cursive; }
 
-h1 .logo {
-  max-width: 150px; 
-  width: 100%;
-  height: auto;
-  border-radius: 15px;
-  display:block;
-  margin:0 auto;
-}
-
-h1 .titulo {
-  margin-top:8px;
-  color:var(--rosa);
-  font-size:36px;
-  font-weight:normal;
-  font-family: 'Great Vibes', cursive; /* substituindo Edwardian Script ITC */
-}
-
-.search {
-  width:100%; padding:10px; border-radius:10px;
-  border:1px solid #ddd; margin-bottom:10px;
-}
-
+.search { width:100%; padding:10px; border-radius:10px; border:1px solid #ddd; margin-bottom:10px; }
 .tabs { display:flex; gap:5px; overflow:auto; margin-bottom:10px; }
 .tab { padding:8px 12px; background:#eee; border-radius:10px; cursor:pointer; }
 .tab.active { background:var(--rosa); color:white; }
 
-.card {
-  background:white; border-radius:15px;
-  margin-bottom:20px; overflow:hidden;
-  box-shadow:0 2px 5px rgba(0,0,0,0.05);
-}
-
+.card { background:white; border-radius:15px; margin-bottom:20px; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
 .img-p { width:100%; height:220px; object-fit:cover; cursor:pointer; }
-
 .info { padding:15px; text-align:center; }
-
-.btn-add {
-  background:var(--rosa); color:white;
-  border:none; padding:10px; width:100%;
-  border-radius:10px; cursor:pointer;
-}
-
+.btn-add { background:var(--rosa); color:white; border:none; padding:10px; width:100%; border-radius:10px; cursor:pointer; }
 .card-wrap { position:relative; }
+.badge { position:absolute; left:10px; top:10px; background:red; color:white; padding:5px 8px; border-radius:8px; font-size:12px; font-weight:bold; }
+.fav { position:absolute; right:10px; top:10px; font-size:20px; cursor:pointer; }
 
-.badge {
-  position:absolute;
-  left:10px;
-  top:10px;
-  background:red;
-  color:white;
-  padding:5px 8px;
-  border-radius:8px;
-  font-size:12px;
-  font-weight:bold;
-}
+.paginacao { display:flex; justify-content:center; gap:8px; margin:20px 0; flex-wrap:wrap; }
+.btn-pag { padding:8px 12px; border:1px solid #ddd; background:white; border-radius:5px; cursor:pointer; }
+.btn-pag.active { background:var(--rosa); color:white; }
 
-.fav {
-  position:absolute;
-  right:10px;
-  top:10px;
-  font-size:20px;
-  cursor:pointer;
-}
+.modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; }
+.modal img { max-width:90%; border-radius:10px; }
 
-.paginacao {
-  display:flex;
-  justify-content:center;
-  gap:8px;
-  margin:20px 0;
-  flex-wrap:wrap;
-}
-
-.btn-pag {
-  padding:8px 12px;
-  border:1px solid #ddd;
-  background:white;
-  border-radius:5px;
-  cursor:pointer;
-}
-
-.btn-pag.active {
-  background:var(--rosa);
-  color:white;
-}
-
-.modal {
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background:rgba(0,0,0,0.8);
-  display:none;
-  justify-content:center;
-  align-items:center;
-}
-
-.modal img {
-  max-width:90%;
-  border-radius:10px;
-}
-
-.carrinho {
-  background:white;
-  padding:15px;
-  border-radius:15px;
-  margin-top:30px;
-}
-
-.btn-w {
-  background:#25D366;
-  color:white;
-  padding:12px;
-  border:none;
-  width:100%;
-  border-radius:10px;
-  margin-top:8px;
-  cursor:pointer;
-}
-
-.item-cart {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:5px;
-}
-
-input, select {
-  width:100%;
-  padding:10px;
-  margin-top:5px;
-  border-radius:8px;
-  border:1px solid #ddd;
-}
+.carrinho { background:white; padding:15px; border-radius:15px; margin-top:30px; }
+.btn-w { background:#25D366; color:white; padding:12px; border:none; width:100%; border-radius:10px; margin-top:8px; cursor:pointer; }
+.item-cart { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
+input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid #ddd; }
 </style>
 </head>
 
@@ -167,28 +51,24 @@ input, select {
 </h1>
 
 <input class="search" id="pesquisa" placeholder="🔍 Procurar..." oninput="irParaPagina(1)">
-
 <div class="tabs" id="tabs"></div>
 <div id="loja"></div>
 <div class="paginacao" id="paginacao"></div>
 
 <div class="carrinho">
   <h2>🛒 Carrinho</h2>
-
   <p>💳 MBWay: <strong>938655760</strong></p>
-
   <div id="itens-carrinho"></div>
-
   <p id="portes"></p>
 
   <input id="cliente" placeholder="Nome">
   <input id="telefone" placeholder="Telefone">
   <input id="morada" placeholder="Morada de envio">
 
-  <select id="envio" onchange="atualizar()">
-    <option value="0">Levantamento</option>
-    <option value="2">CTT Normal</option>
-    <option value="4">CTT Registado</option>
+  <select id="envio">
+    <option>Levantamento</option>
+    <option>CTT Normal</option>
+    <option>CTT Registado</option>
   </select>
 
   <button onclick="finalizar()" class="btn-w">WhatsApp</button>
@@ -203,7 +83,6 @@ input, select {
 
 <script>
 const API = 'https://sheetdb.io/api/v1/rfqtnc19zz2d2';
-
 let db = [];
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let favs = JSON.parse(localStorage.getItem("favs")) || [];
@@ -222,68 +101,35 @@ function carregarProdutos(data){
     promo: p.promo === "sim",
     categoria: p.categoria || "Outros"
   }));
-
   let categorias = [...new Set(db.map(p=>p.categoria))];
-
   document.getElementById('tabs').innerHTML =
     categorias.map((c,i)=>`<div class="tab ${i==0?'active':''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
-
   if(!categoriaAtual) categoriaAtual = categorias[0];
-
   renderProdutos();
   atualizar();
 }
 
 fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); });
+setInterval(()=>{ fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); }); }, 30000);
 
-setInterval(()=>{
-  fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); });
-}, 30000);
-
-function mudar(c,el){
-  categoriaAtual=c;
-  paginaAtual=1;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  renderProdutos();
-}
-
-function irParaPagina(num){
-  paginaAtual=num;
-  renderProdutos();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
+function mudar(c,el){ categoriaAtual=c; paginaAtual=1; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); renderProdutos(); }
+function irParaPagina(num){ paginaAtual=num; renderProdutos(); window.scrollTo({top:0,behavior:'smooth'}); }
 
 function renderProdutos(){
   let termo = document.getElementById('pesquisa').value.toLowerCase();
-
-  let lista = db.filter(p=>
-    p.categoria==categoriaAtual &&
-    p.nome.toLowerCase().includes(termo)
-  );
-
+  let lista = db.filter(p=> p.categoria==categoriaAtual && p.nome.toLowerCase().includes(termo));
   let totalPaginas = Math.ceil(lista.length / itensPorPagina);
   let inicio = (paginaAtual - 1) * itensPorPagina;
   let itens = lista.slice(inicio, inicio + itensPorPagina);
-
   let h="";
   itens.forEach(p=>{
     let fav = favs.includes(p.nome) ? "❤️" : "🤍";
-
     let precoHTML = "";
     if(p.promo && p.precoPromo){
-      precoHTML = `
-        <p style="text-decoration:line-through;color:#999;">
-          ${p.preco.toFixed(2)}€
-        </p>
-        <p style="color:red;font-weight:bold;">
-          ${p.precoPromo.toFixed(2)}€ 🔥
-        </p>
-      `;
+      precoHTML = `<p style="text-decoration:line-through;color:#999;">${p.preco.toFixed(2)}€</p>
+      <p style="color:red;font-weight:bold;">${p.precoPromo.toFixed(2)}€ 🔥</p>`;
     } else { precoHTML = `<p>${p.preco.toFixed(2)}€</p>`; }
-
-    h+=`
-    <div class="card">
+    h+=`<div class="card">
       <div class="card-wrap">
         ${p.promo ? '<div class="badge">PROMO</div>' : ''}
         <span class="fav" onclick="toggleFav('${p.nome}')">${fav}</span>
@@ -296,69 +142,41 @@ function renderProdutos(){
       </div>
     </div>`;
   });
-
   document.getElementById('loja').innerHTML = h;
   renderPaginacao(totalPaginas);
 }
 
-function renderPaginacao(total){
-  let h="";
-  for(let i=1;i<=total;i++){
-    h+=`<button class="btn-pag ${i===paginaAtual?'active':''}" onclick="irParaPagina(${i})">${i}</button>`;
-  }
-  document.getElementById('paginacao').innerHTML = h;
-}
+function renderPaginacao(total){ let h=""; for(let i=1;i<=total;i++){ h+=`<button class="btn-pag ${i===paginaAtual?'active':''}" onclick="irParaPagina(${i})">${i}</button>`; } document.getElementById('paginacao').innerHTML = h; }
 
-function toggleFav(nome){
-  if(favs.includes(nome)){ favs = favs.filter(f=>f!==nome); } 
-  else { favs.push(nome); }
-  localStorage.setItem("favs", JSON.stringify(favs));
-  renderProdutos();
-}
+function toggleFav(nome){ if(favs.includes(nome)){ favs = favs.filter(f=>f!==nome); } else { favs.push(nome); } localStorage.setItem("favs", JSON.stringify(favs)); renderProdutos(); }
 
-function abrirImg(src){
-  document.getElementById('modal').style.display="flex";
-  document.getElementById('imgGrande').src=src;
-}
-
+function abrirImg(src){ document.getElementById('modal').style.display="flex"; document.getElementById('imgGrande').src=src; }
 function fecharModal(){ document.getElementById('modal').style.display="none"; }
 
-function add(id){
-  let produto = db.find(p=>p.id===id);
-  let precoFinal = (produto.promo && produto.precoPromo) ? produto.precoPromo : produto.preco;
-
-  let ex = cart.find(p=>p.id===id);
-  if(ex) ex.qtd++;
-  else cart.push({...produto, preco:precoFinal, qtd:1});
-
-  guardar();
-  atualizar();
-}
-
+function add(id){ let produto = db.find(p=>p.id===id); let precoFinal = (produto.promo && produto.precoPromo) ? produto.precoPromo : produto.preco; let ex = cart.find(p=>p.id===id); if(ex) ex.qtd++; else cart.push({...produto, preco:precoFinal, qtd:1}); guardar(); atualizar(); }
 function mais(i){ cart[i].qtd++; guardar(); atualizar(); }
 function menos(i){ cart[i].qtd--; if(cart[i].qtd<=0) cart.splice(i,1); guardar(); atualizar(); }
-
 function limparCarrinho(){ if(confirm("Anular pedido?")){ cart=[]; guardar(); atualizar(); } }
 
 function atualizar(){
   let total=0; let h="";
-  cart.forEach((p,i)=>{
-    let sub = p.qtd * p.preco;
-    total+=sub;
-    h+=`<div class="item-cart"><span>#${p.id} - ${p.nome} x${p.qtd}</span><div><button onclick="menos(${i})">➖</button><button onclick="mais(${i})">➕</button></div></div>`;
-  });
-  let envio = parseFloat(document.getElementById('envio').value);
-  total+=envio;
+  cart.forEach((p,i)=>{ let sub = p.qtd * p.preco; total+=sub; h+=`<div class="item-cart"><span>#${p.id} - ${p.nome} x${p.qtd}</span><div><button onclick="menos(${i})">➖</button><button onclick="mais(${i})">➕</button></div></div>`; });
   document.getElementById('itens-carrinho').innerHTML = h + `<hr>Total: ${total.toFixed(2)}€`;
-  document.getElementById('portes').innerText = "Portes: " + envio + "€";
+  document.getElementById('portes').innerText = ""; // sem valor
 }
 
 function gerarTexto(){
   let n = document.getElementById('cliente').value;
   let t = document.getElementById('telefone').value;
   let m = document.getElementById('morada').value;
+  let envio = document.getElementById('envio').value;
+
   if(cart.length === 0){ alert("Carrinho vazio!"); return ""; }
-  let msg = "Pedido\nNome: " + n + "\nTel: " + t + "\n\n";
+
+  let msg = "Pedido\nNome: " + n + "\nTel: " + t + "\nTipo de envio: " + envio + "\n";
+  if(envio === "Levantamento"){ msg += "Nota: Cliente irá levantar a encomenda pessoalmente.\n"; }
+  msg += "\n";
+
   cart.forEach(p=>{ msg += "#" + p.id + " - " + p.nome + " x" + p.qtd + "\n"; });
   msg += "\nMorada: " + m;
   return encodeURIComponent(msg);
