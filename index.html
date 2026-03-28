@@ -40,6 +40,7 @@ h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:norm
 .btn-w { background:#25D366; color:white; padding:12px; border:none; width:100%; border-radius:10px; margin-top:8px; cursor:pointer; }
 .item-cart { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
 input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid #ddd; }
+#envio { margin-top:5px; border:1px solid #ddd; border-radius:8px; padding:10px; font-weight:bold; color:#111; }
 </style>
 </head>
 
@@ -59,13 +60,14 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
   <h2>🛒 Carrinho</h2>
   <p>💳 MBWay: <strong>938655760</strong></p>
   <div id="itens-carrinho"></div>
-  <p id="portes"></p>
+  <p id="total-carrinho"></p>
 
   <input id="cliente" placeholder="Nome">
   <input id="telefone" placeholder="Telefone">
   <input id="morada" placeholder="Morada de envio">
 
-  <select id="envio">
+  <label for="envio"><strong>Tipo de envio:</strong></label>
+  <select id="envio" onchange="atualizar()">
     <option>Levantamento</option>
     <option>CTT Normal</option>
     <option>CTT Registado</option>
@@ -161,8 +163,10 @@ function limparCarrinho(){ if(confirm("Anular pedido?")){ cart=[]; guardar(); at
 function atualizar(){
   let total=0; let h="";
   cart.forEach((p,i)=>{ let sub = p.qtd * p.preco; total+=sub; h+=`<div class="item-cart"><span>#${p.id} - ${p.nome} x${p.qtd}</span><div><button onclick="menos(${i})">➖</button><button onclick="mais(${i})">➕</button></div></div>`; });
-  document.getElementById('itens-carrinho').innerHTML = h + `<hr>Total: ${total.toFixed(2)}€`;
-  document.getElementById('portes').innerText = ""; // sem valor
+  document.getElementById('itens-carrinho').innerHTML = h;
+  
+  let envio = document.getElementById('envio').value;
+  document.getElementById('total-carrinho').innerHTML = `<strong>Total: ${total.toFixed(2)}€ | Envio: ${envio}</strong>`;
 }
 
 function gerarTexto(){
@@ -173,12 +177,16 @@ function gerarTexto(){
 
   if(cart.length === 0){ alert("Carrinho vazio!"); return ""; }
 
+  let total = cart.reduce((acc,p)=>acc + (p.qtd * p.preco),0);
+
   let msg = "Pedido\nNome: " + n + "\nTel: " + t + "\nTipo de envio: " + envio + "\n";
   if(envio === "Levantamento"){ msg += "Nota: Cliente irá levantar a encomenda pessoalmente.\n"; }
   msg += "\n";
 
   cart.forEach(p=>{ msg += "#" + p.id + " - " + p.nome + " x" + p.qtd + "\n"; });
   msg += "\nMorada: " + m;
+  msg += `\nTotal a pagar: ${total.toFixed(2)}€`;
+
   return encodeURIComponent(msg);
 }
 
