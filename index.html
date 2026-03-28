@@ -1,4 +1,4 @@
-      <!DOCTYPE html>
+   <!DOCTYPE html>
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
@@ -30,17 +30,17 @@ h1 { text-align:center; color:var(--rosa); }
 .card {
   background:white; border-radius:15px;
   margin-bottom:20px; overflow:hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow:0 2px 5px rgba(0,0,0,0.05);
 }
 
-.img-p { width:100%; height:220px; object-fit:cover; }
+.img-p { width:100%; height:220px; object-fit:cover; cursor:pointer; }
 
 .info { padding:15px; text-align:center; }
 
 .btn-add {
   background:var(--rosa); color:white;
   border:none; padding:10px; width:100%;
-  border-radius:10px;
+  border-radius:10px; cursor:pointer;
 }
 
 .card-wrap { position:relative; }
@@ -57,11 +57,20 @@ h1 { text-align:center; color:var(--rosa); }
   font-weight:bold;
 }
 
+.fav {
+  position:absolute;
+  right:10px;
+  top:10px;
+  font-size:20px;
+  cursor:pointer;
+}
+
 .paginacao {
   display:flex;
   justify-content:center;
   gap:8px;
   margin:20px 0;
+  flex-wrap:wrap;
 }
 
 .btn-pag {
@@ -75,6 +84,21 @@ h1 { text-align:center; color:var(--rosa); }
 .btn-pag.active {
   background:var(--rosa);
   color:white;
+}
+
+.modal {
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,0.8);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.modal img {
+  max-width:90%;
+  border-radius:10px;
 }
 
 .carrinho {
@@ -92,11 +116,13 @@ h1 { text-align:center; color:var(--rosa); }
   width:100%;
   border-radius:10px;
   margin-top:8px;
+  cursor:pointer;
 }
 
 .item-cart {
   display:flex;
   justify-content:space-between;
+  align-items:center;
   margin-bottom:5px;
 }
 
@@ -122,14 +148,16 @@ input, select {
 
 <div class="carrinho">
   <h2>🛒 Carrinho</h2>
+
   <p>💳 MBWay: <strong>938655760</strong></p>
 
   <div id="itens-carrinho"></div>
+
   <p id="portes"></p>
 
   <input id="cliente" placeholder="Nome">
   <input id="telefone" placeholder="Telefone">
-  <input id="morada" placeholder="Morada">
+  <input id="morada" placeholder="Morada de envio">
 
   <select id="envio" onchange="atualizar()">
     <option value="0">Levantamento</option>
@@ -138,7 +166,13 @@ input, select {
   </select>
 
   <button onclick="finalizar()" class="btn-w">WhatsApp</button>
-  <button onclick="copiar()" class="btn-w" style="background:#111;">Copiar</button>
+  <button onclick="copiar()" class="btn-w" style="background:#111;">Copiar Pedido</button>
+  <button onclick="mbway()" class="btn-w" style="background:#555;">Pagar MBWay</button>
+  <button onclick="limparCarrinho()" class="btn-w" style="background:#dc2626;">❌ Anular Pedido</button>
+</div>
+
+<div class="modal" id="modal" onclick="fecharModal()">
+  <img id="imgGrande">
 </div>
 
 <script>
@@ -146,6 +180,7 @@ const API = 'https://sheetdb.io/api/v1/rfqtnc19zz2d2';
 
 let db = [];
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let favs = JSON.parse(localStorage.getItem("favs")) || [];
 let categoriaAtual = "";
 let paginaAtual = 1;
 const itensPorPagina = 10;
@@ -159,7 +194,7 @@ function carregarProdutos(data){
     ...p,
     id: parseInt(p.id),
     preco: parseFloat(p.preco),
-    precoPromo: parseFloat(p.precoPromo) || null,
+    precoPromo: p.precoPromo ? parseFloat(p.precoPromo) : null,
     promo: p.promo === "sim",
     categoria: p.categoria || "Outros"
   }));
@@ -180,7 +215,7 @@ fetch(API).then(r=>r.json()).then(data=>{
   carregarProdutos(data);
 });
 
-// 🔄 atualização automática (30s)
+// auto update
 setInterval(()=>{
   fetch(API).then(r=>r.json()).then(data=>{
     carregarProdutos(data);
@@ -216,6 +251,8 @@ function renderProdutos(){
   let h="";
   itens.forEach(p=>{
 
+    let fav = favs.includes(p.nome) ? "❤️" : "🤍";
+
     let precoHTML = "";
     if(p.promo && p.precoPromo){
       precoHTML = `
@@ -234,7 +271,8 @@ function renderProdutos(){
     <div class="card">
       <div class="card-wrap">
         ${p.promo ? '<div class="badge">PROMO</div>' : ''}
-        <img src="${p.img}" class="img-p">
+        <span class="fav" onclick="toggleFav('${p.nome}')">${fav}</span>
+        <img src="${p.img}" class="img-p" onclick="abrirImg('${p.img}')">
       </div>
       <div class="info">
         <h3>#${p.id} - ${p.nome}</h3>
@@ -256,6 +294,25 @@ function renderPaginacao(total){
   document.getElementById('paginacao').innerHTML = h;
 }
 
+function toggleFav(nome){
+  if(favs.includes(nome)){
+    favs = favs.filter(f=>f!==nome);
+  } else {
+    favs.push(nome);
+  }
+  localStorage.setItem("favs", JSON.stringify(favs));
+  renderProdutos();
+}
+
+function abrirImg(src){
+  document.getElementById('modal').style.display="flex";
+  document.getElementById('imgGrande').src=src;
+}
+
+function fecharModal(){
+  document.getElementById('modal').style.display="none";
+}
+
 function add(id){
   let produto = db.find(p=>p.id===id);
   let precoFinal = (produto.promo && produto.precoPromo) ? produto.precoPromo : produto.preco;
@@ -268,6 +325,23 @@ function add(id){
   atualizar();
 }
 
+function mais(i){ cart[i].qtd++; guardar(); atualizar(); }
+
+function menos(i){
+  cart[i].qtd--;
+  if(cart[i].qtd<=0) cart.splice(i,1);
+  guardar();
+  atualizar();
+}
+
+function limparCarrinho(){
+  if(confirm("Anular pedido?")){
+    cart=[];
+    guardar();
+    atualizar();
+  }
+}
+
 function atualizar(){
   let total=0;
   let h="";
@@ -278,8 +352,11 @@ function atualizar(){
 
     h+=`
     <div class="item-cart">
-      <span>#${p.id} ${p.nome} x${p.qtd}</span>
-      <button onclick="cart.splice(${i},1);guardar();atualizar()">❌</button>
+      <span>#${p.id} - ${p.nome} x${p.qtd}</span>
+      <div>
+        <button onclick="menos(${i})">➖</button>
+        <button onclick="mais(${i})">➕</button>
+      </div>
     </div>`;
   });
 
@@ -289,28 +366,48 @@ function atualizar(){
   document.getElementById('itens-carrinho').innerHTML =
     h + `<hr>Total: ${total.toFixed(2)}€`;
 
-  document.getElementById('portes').innerText = "Portes: "+envio+"€";
+  document.getElementById('portes').innerText = "Portes: " + envio + "€";
 }
 
 function gerarTexto(){
-  let msg="Pedido\n";
+  let n = document.getElementById('cliente').value;
+  let t = document.getElementById('telefone').value;
+  let m = document.getElementById('morada').value;
+
+  if(cart.length === 0){
+    alert("Carrinho vazio!");
+    return "";
+  }
+
+  let msg = "Pedido\n";
+  msg += "Nome: " + n + "\n";
+  msg += "Tel: " + t + "\n\n";
+
   cart.forEach(p=>{
-    msg+=`#${p.id} ${p.nome} x${p.qtd}\n`;
+    msg += "#" + p.id + " - " + p.nome + " x" + p.qtd + "\n";
   });
+
+  msg += "\nMorada: " + m;
+
   return encodeURIComponent(msg);
 }
 
 function finalizar(){
   let texto = gerarTexto();
+  if(!texto) return;
   window.open(`https://wa.me/351938655760?text=${texto}`);
 }
 
 function copiar(){
   let texto = decodeURIComponent(gerarTexto());
   navigator.clipboard.writeText(texto);
-  alert("Copiado!");
+  alert("Pedido copiado!");
+}
+
+function mbway(){
+  alert("Paga para 938655760 e envia comprovativo 😊");
 }
 </script>
 
 </body>
-</html>
+      </html>     
