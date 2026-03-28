@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
@@ -6,7 +6,7 @@
 
 <title>Miminhos da Mi</title>
 
-<!-- FAVICON COMPLETO -->
+<!-- FAVICON -->
 <link rel="icon" type="image/png" sizes="32x32" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
 <link rel="icon" type="image/png" sizes="192x192" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
 <link rel="icon" type="image/png" sizes="512x512" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
@@ -23,6 +23,34 @@
 
 body { font-family:sans-serif; max-width:450px; margin:auto; padding:15px; background:var(--fundo); }
 
+/* SPLASH */
+#splash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff5f7;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+#splash img {
+  width: 160px;
+  border-radius: 20px;
+  margin-bottom: 15px;
+}
+
+#splash h2 {
+  font-size: 30px;
+  color: var(--rosa);
+  font-family: 'Great Vibes', cursive;
+}
+
+/* RESTO */
 h1 { text-align:center; margin-bottom:10px; }
 h1 .logo { max-width:150px; width:100%; height:auto; border-radius:15px; display:block; margin:0 auto; }
 h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:normal; font-family:'Great Vibes', cursive; }
@@ -57,8 +85,14 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
 
 <body>
 
+<!-- SPLASH -->
+<div id="splash">
+  <img src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZNBpyDNjcgFat1zgMyeFxqRGE_GUxgACpiUAAqaPQVa1bCMYXlu7BzoE.jpg">
+  <h2>Olá 👋</h2>
+</div>
+
 <h1>
-  <img src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZNBpyDNjcgFat1zgMyeFxqRGE_GUxgACpiUAAqaPQVa1bCMYXlu7BzoE.jpg" alt="Miminhos da Mi" class="logo">
+  <img src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZNBpyDNjcgFat1zgMyeFxqRGE_GUxgACpiUAAqaPQVa1bCMYXlu7BzoE.jpg" class="logo">
   <div class="titulo">Miminhos da Mi ✨</div>
 </h1>
 
@@ -95,6 +129,14 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
 </div>
 
 <script>
+// SPLASH TIME
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    document.getElementById("splash").style.display = "none";
+  }, 2000);
+});
+
+// RESTO DO SISTEMA
 const API = 'https://sheetdb.io/api/v1/rfqtnc19zz2d2';
 let db = [];
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
