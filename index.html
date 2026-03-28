@@ -16,29 +16,8 @@ body {
   background:var(--fundo);
 }
 
-/* NOVO HEADER */
-.header {
-  text-align:center;
-  background:white;
-  border-radius:15px;
-  padding:10px;
-  margin-bottom:15px;
-  border:2px solid #f3d2d8;
-}
+h1 { text-align:center; color:var(--rosa); }
 
-.header img {
-  width:70px;
-  margin-bottom:5px;
-}
-
-.header h1 {
-  font-family:cursive;
-  color:#c2416c;
-  margin:0;
-  font-size:28px;
-}
-
-/* resto igual */
 .search {
   width:100%; padding:10px; border-radius:10px;
   border:1px solid #ddd; margin-bottom:10px;
@@ -147,7 +126,7 @@ body {
   margin-bottom:5px;
 }
 
-input {
+input, select {
   width:100%;
   padding:10px;
   margin-top:5px;
@@ -159,11 +138,7 @@ input {
 
 <body>
 
-<!-- NOVO HEADER -->
-<div class="header">
-  <img src="https://i.imgur.com/8Km9tLL.png"> <!-- podes trocar pela tua imagem -->
-  <h1>Miminhos Da Mi</h1>
-</div>
+<h1>Miminhos da Mi ✨</h1>
 
 <input class="search" id="pesquisa" placeholder="🔍 Procurar..." oninput="irParaPagina(1)">
 
@@ -178,9 +153,17 @@ input {
 
   <div id="itens-carrinho"></div>
 
+  <p id="portes"></p>
+
   <input id="cliente" placeholder="Nome">
   <input id="telefone" placeholder="Telefone">
   <input id="morada" placeholder="Morada de envio">
+
+  <select id="envio" onchange="atualizar()">
+    <option value="0">Levantamento</option>
+    <option value="2">CTT Normal</option>
+    <option value="4">CTT Registado</option>
+  </select>
 
   <button onclick="finalizar()" class="btn-w">WhatsApp</button>
   <button onclick="copiar()" class="btn-w" style="background:#111;">Copiar Pedido</button>
@@ -227,7 +210,17 @@ function carregarProdutos(data){
   atualizar();
 }
 
-fetch(API).then(r=>r.json()).then(data=>carregarProdutos(data));
+// carregar inicial
+fetch(API).then(r=>r.json()).then(data=>{
+  carregarProdutos(data);
+});
+
+// auto update
+setInterval(()=>{
+  fetch(API).then(r=>r.json()).then(data=>{
+    carregarProdutos(data);
+  });
+}, 30000);
 
 function mudar(c,el){
   categoriaAtual=c;
@@ -258,20 +251,66 @@ function renderProdutos(){
   let h="";
   itens.forEach(p=>{
 
-    let preco = (p.promo && p.precoPromo) ? p.precoPromo : p.preco;
+    let fav = favs.includes(p.nome) ? "❤️" : "🤍";
+
+    let precoHTML = "";
+    if(p.promo && p.precoPromo){
+      precoHTML = `
+        <p style="text-decoration:line-through;color:#999;">
+          ${p.preco.toFixed(2)}€
+        </p>
+        <p style="color:red;font-weight:bold;">
+          ${p.precoPromo.toFixed(2)}€ 🔥
+        </p>
+      `;
+    } else {
+      precoHTML = `<p>${p.preco.toFixed(2)}€</p>`;
+    }
 
     h+=`
     <div class="card">
-      <img src="${p.img}" class="img-p">
+      <div class="card-wrap">
+        ${p.promo ? '<div class="badge">PROMO</div>' : ''}
+        <span class="fav" onclick="toggleFav('${p.nome}')">${fav}</span>
+        <img src="${p.img}" class="img-p" onclick="abrirImg('${p.img}')">
+      </div>
       <div class="info">
         <h3>#${p.id} - ${p.nome}</h3>
-        <p>${preco.toFixed(2)}€</p>
+        ${precoHTML}
         <button class="btn-add" onclick="add(${p.id})">Adicionar</button>
       </div>
     </div>`;
   });
 
   document.getElementById('loja').innerHTML = h;
+  renderPaginacao(totalPaginas);
+}
+
+function renderPaginacao(total){
+  let h="";
+  for(let i=1;i<=total;i++){
+    h+=`<button class="btn-pag ${i===paginaAtual?'active':''}" onclick="irParaPagina(${i})">${i}</button>`;
+  }
+  document.getElementById('paginacao').innerHTML = h;
+}
+
+function toggleFav(nome){
+  if(favs.includes(nome)){
+    favs = favs.filter(f=>f!==nome);
+  } else {
+    favs.push(nome);
+  }
+  localStorage.setItem("favs", JSON.stringify(favs));
+  renderProdutos();
+}
+
+function abrirImg(src){
+  document.getElementById('modal').style.display="flex";
+  document.getElementById('imgGrande').src=src;
+}
+
+function fecharModal(){
+  document.getElementById('modal').style.display="none";
 }
 
 function add(id){
@@ -286,6 +325,23 @@ function add(id){
   atualizar();
 }
 
+function mais(i){ cart[i].qtd++; guardar(); atualizar(); }
+
+function menos(i){
+  cart[i].qtd--;
+  if(cart[i].qtd<=0) cart.splice(i,1);
+  guardar();
+  atualizar();
+}
+
+function limparCarrinho(){
+  if(confirm("Anular pedido?")){
+    cart=[];
+    guardar();
+    atualizar();
+  }
+}
+
 function atualizar(){
   let total=0;
   let h="";
@@ -297,17 +353,31 @@ function atualizar(){
     h+=`
     <div class="item-cart">
       <span>#${p.id} - ${p.nome} x${p.qtd}</span>
+      <div>
+        <button onclick="menos(${i})">➖</button>
+        <button onclick="mais(${i})">➕</button>
+      </div>
     </div>`;
   });
 
+  let envio = parseFloat(document.getElementById('envio').value);
+  total+=envio;
+
   document.getElementById('itens-carrinho').innerHTML =
     h + `<hr>Total: ${total.toFixed(2)}€`;
+
+  document.getElementById('portes').innerText = "Portes: " + envio + "€";
 }
 
 function gerarTexto(){
   let n = document.getElementById('cliente').value;
   let t = document.getElementById('telefone').value;
   let m = document.getElementById('morada').value;
+
+  if(cart.length === 0){
+    alert("Carrinho vazio!");
+    return "";
+  }
 
   let msg = "Pedido\n";
   msg += "Nome: " + n + "\n";
@@ -324,6 +394,7 @@ function gerarTexto(){
 
 function finalizar(){
   let texto = gerarTexto();
+  if(!texto) return;
   window.open(`https://wa.me/351938655760?text=${texto}`);
 }
 
@@ -334,7 +405,7 @@ function copiar(){
 }
 
 function mbway(){
-  alert("Paga para 938655760 😊");
+  alert("Paga para 938655760 e envia comprovativo 😊");
 }
 </script>
 
