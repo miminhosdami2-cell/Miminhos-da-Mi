@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
@@ -22,7 +22,7 @@ h1 {
 }
 
 h1 .logo {
-  max-width: 200px;
+  max-width: 150px; /* imagem ligeiramente menor */
   width: 100%;
   height: auto;
   border-radius: 15px;
@@ -207,9 +207,7 @@ let categoriaAtual = "";
 let paginaAtual = 1;
 const itensPorPagina = 10;
 
-function guardar(){
-  localStorage.setItem("cart", JSON.stringify(cart));
-}
+function guardar(){ localStorage.setItem("cart", JSON.stringify(cart)); }
 
 function carregarProdutos(data){
   db = data.map(p=>({
@@ -232,16 +230,10 @@ function carregarProdutos(data){
   atualizar();
 }
 
-// carregar inicial
-fetch(API).then(r=>r.json()).then(data=>{
-  carregarProdutos(data);
-});
+fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); });
 
-// auto update
 setInterval(()=>{
-  fetch(API).then(r=>r.json()).then(data=>{
-    carregarProdutos(data);
-  });
+  fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); });
 }, 30000);
 
 function mudar(c,el){
@@ -272,7 +264,6 @@ function renderProdutos(){
 
   let h="";
   itens.forEach(p=>{
-
     let fav = favs.includes(p.nome) ? "❤️" : "🤍";
 
     let precoHTML = "";
@@ -285,9 +276,7 @@ function renderProdutos(){
           ${p.precoPromo.toFixed(2)}€ 🔥
         </p>
       `;
-    } else {
-      precoHTML = `<p>${p.preco.toFixed(2)}€</p>`;
-    }
+    } else { precoHTML = `<p>${p.preco.toFixed(2)}€</p>`; }
 
     h+=`
     <div class="card">
@@ -317,11 +306,8 @@ function renderPaginacao(total){
 }
 
 function toggleFav(nome){
-  if(favs.includes(nome)){
-    favs = favs.filter(f=>f!==nome);
-  } else {
-    favs.push(nome);
-  }
+  if(favs.includes(nome)){ favs = favs.filter(f=>f!==nome); } 
+  else { favs.push(nome); }
   localStorage.setItem("favs", JSON.stringify(favs));
   renderProdutos();
 }
@@ -331,9 +317,7 @@ function abrirImg(src){
   document.getElementById('imgGrande').src=src;
 }
 
-function fecharModal(){
-  document.getElementById('modal').style.display="none";
-}
+function fecharModal(){ document.getElementById('modal').style.display="none"; }
 
 function add(id){
   let produto = db.find(p=>p.id===id);
@@ -348,46 +332,20 @@ function add(id){
 }
 
 function mais(i){ cart[i].qtd++; guardar(); atualizar(); }
+function menos(i){ cart[i].qtd--; if(cart[i].qtd<=0) cart.splice(i,1); guardar(); atualizar(); }
 
-function menos(i){
-  cart[i].qtd--;
-  if(cart[i].qtd<=0) cart.splice(i,1);
-  guardar();
-  atualizar();
-}
-
-function limparCarrinho(){
-  if(confirm("Anular pedido?")){
-    cart=[];
-    guardar();
-    atualizar();
-  }
-}
+function limparCarrinho(){ if(confirm("Anular pedido?")){ cart=[]; guardar(); atualizar(); } }
 
 function atualizar(){
-  let total=0;
-  let h="";
-
+  let total=0; let h="";
   cart.forEach((p,i)=>{
     let sub = p.qtd * p.preco;
     total+=sub;
-
-    h+=`
-    <div class="item-cart">
-      <span>#${p.id} - ${p.nome} x${p.qtd}</span>
-      <div>
-        <button onclick="menos(${i})">➖</button>
-        <button onclick="mais(${i})">➕</button>
-      </div>
-    </div>`;
+    h+=`<div class="item-cart"><span>#${p.id} - ${p.nome} x${p.qtd}</span><div><button onclick="menos(${i})">➖</button><button onclick="mais(${i})">➕</button></div></div>`;
   });
-
   let envio = parseFloat(document.getElementById('envio').value);
   total+=envio;
-
-  document.getElementById('itens-carrinho').innerHTML =
-    h + `<hr>Total: ${total.toFixed(2)}€`;
-
+  document.getElementById('itens-carrinho').innerHTML = h + `<hr>Total: ${total.toFixed(2)}€`;
   document.getElementById('portes').innerText = "Portes: " + envio + "€";
 }
 
@@ -395,40 +353,16 @@ function gerarTexto(){
   let n = document.getElementById('cliente').value;
   let t = document.getElementById('telefone').value;
   let m = document.getElementById('morada').value;
-
-  if(cart.length === 0){
-    alert("Carrinho vazio!");
-    return "";
-  }
-
-  let msg = "Pedido\n";
-  msg += "Nome: " + n + "\n";
-  msg += "Tel: " + t + "\n\n";
-
-  cart.forEach(p=>{
-    msg += "#" + p.id + " - " + p.nome + " x" + p.qtd + "\n";
-  });
-
+  if(cart.length === 0){ alert("Carrinho vazio!"); return ""; }
+  let msg = "Pedido\nNome: " + n + "\nTel: " + t + "\n\n";
+  cart.forEach(p=>{ msg += "#" + p.id + " - " + p.nome + " x" + p.qtd + "\n"; });
   msg += "\nMorada: " + m;
-
   return encodeURIComponent(msg);
 }
 
-function finalizar(){
-  let texto = gerarTexto();
-  if(!texto) return;
-  window.open(`https://wa.me/351938655760?text=${texto}`);
-}
-
-function copiar(){
-  let texto = decodeURIComponent(gerarTexto());
-  navigator.clipboard.writeText(texto);
-  alert("Pedido copiado!");
-}
-
-function mbway(){
-  alert("Paga para 938655760 e envia comprovativo 😊");
-}
+function finalizar(){ let texto = gerarTexto(); if(!texto) return; window.open(`https://wa.me/351938655760?text=${texto}`); }
+function copiar(){ let texto = decodeURIComponent(gerarTexto()); navigator.clipboard.writeText(texto); alert("Pedido copiado!"); }
+function mbway(){ alert("Paga para 938655760 e envia comprovativo 😊"); }
 </script>
 
 </body>
