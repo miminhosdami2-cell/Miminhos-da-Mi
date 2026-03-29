@@ -4,16 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Miminhos da Mi</title>
+<!-- FAVICON -->
+<link rel="icon" type="image/png" sizes="32x32" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
+<link rel="icon" type="image/png" sizes="192x192" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
+<link rel="icon" type="image/png" sizes="512x512" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
+<link rel="apple-touch-icon" sizes="180x180" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
 
-<!-- PWA -->
+<!-- PWA Manifest -->
 <link rel="manifest" href="manifest.json">
+
 <meta name="theme-color" content="#db2777">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 
-<!-- Favicon -->
-<link rel="icon" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
-
-<!-- Google Font -->
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 
 <style>
@@ -48,20 +51,6 @@ h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:norm
 .item-cart { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
 input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid #ddd; }
 #envio { margin-top:5px; border:1px solid #ddd; border-radius:8px; padding:10px; font-weight:bold; color:#111; }
-
-/* BOTÃO INSTALAR */
-#installBtn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: var(--rosa);
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 30px;
-  display: none;
-  z-index: 10000;
-}
 </style>
 </head>
 <body>
@@ -106,15 +95,24 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
   <img id="imgGrande">
 </div>
 
-<button id="installBtn">📲 Instalar</button>
-
 <script>
 // SPLASH
 window.addEventListener("load", () => {
   setTimeout(() => { document.getElementById("splash").style.display = "none"; }, 2000);
 });
 
-// API e produtos
+// SERVICE WORKER PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js').then(function(registration) {
+      console.log('Service Worker registrado com sucesso:', registration.scope);
+    }, function(err) {
+      console.log('Falha ao registrar Service Worker:', err);
+    });
+  });
+}
+
+// SISTEMA PRODUTOS
 const API = 'https://sheetdb.io/api/v1/rfqtnc19zz2d2';
 let db = [];
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -125,32 +123,94 @@ const itensPorPagina = 10;
 
 function guardar(){ localStorage.setItem("cart", JSON.stringify(cart)); }
 
-// (restante do teu código JS mantém-se exatamente igual: carregarProdutos, renderProdutos, carrinho, WhatsApp, MBWay, etc.)
-// Copia todo o teu JS existente aqui dentro, só acrescentei o botão de instalar
-
-// SERVICE WORKER
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
+function carregarProdutos(data){
+  db = data.map(p=>({
+    ...p,
+    id: parseInt(p.id),
+    preco: parseFloat(p.preco),
+    precoPromo: p.precoPromo ? parseFloat(p.precoPromo) : null,
+    promo: p.promo === "sim",
+    categoria: p.categoria || "Outros"
+  }));
+  let categorias = [...new Set(db.map(p=>p.categoria))];
+  document.getElementById('tabs').innerHTML =
+    categorias.map((c,i)=>`<div class="tab ${i==0?'active':''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
+  if(!categoriaAtual) categoriaAtual = categorias[0];
+  renderProdutos();
+  atualizar();
 }
 
-// BOTÃO INSTALAR
-let deferredPrompt;
-const btn = document.getElementById("installBtn");
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  btn.style.display = "block";
-});
-btn.onclick = async () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt = null;
-    btn.style.display = "none";
-  } else {
-    alert("No iPhone:\n\nPartilhar → Adicionar ao ecrã principal");
-  }
-};
-</script>
+fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); });
+setInterval(()=>{ fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); }); }, 30000);
 
+function mudar(c,el){ categoriaAtual=c; paginaAtual=1; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); renderProdutos(); }
+function irParaPagina(num){ paginaAtual=num; renderProdutos(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function renderProdutos(){
+  let termo = document.getElementById('pesquisa').value.toLowerCase();
+  let lista = db.filter(p=> p.categoria==categoriaAtual && p.nome.toLowerCase().includes(termo));
+  let totalPaginas = Math.ceil(lista.length / itensPorPagina);
+  let inicio = (paginaAtual - 1) * itensPorPagina;
+  let itens = lista.slice(inicio, inicio + itensPorPagina);
+  let h="";
+  itens.forEach(p=>{
+    let fav = favs.includes(p.nome) ? "❤️" : "🤍";
+    let precoHTML = "";
+    if(p.promo && p.precoPromo){
+      precoHTML = `<p style="text-decoration:line-through;color:#999;">${p.preco.toFixed(2)}€</p>
+      <p style="color:red;font-weight:bold;">${p.precoPromo.toFixed(2)}€ 🔥</p>`;
+    } else { precoHTML = `<p>${p.preco.toFixed(2)}€</p>`; }
+    h+=`<div class="card">
+      <div class="card-wrap">
+        ${p.promo ? '<div class="badge">PROMO</div>' : ''}
+        <span class="fav" onclick="toggleFav('${p.nome}')">${fav}</span>
+        <img src="${p.img}" class="img-p" onclick="abrirImg('${p.img}')">
+      </div>
+      <div class="info">
+        <h3>#${p.id} - ${p.nome}</h3>
+        ${precoHTML}
+        <button class="btn-add" onclick="add(${p.id})">Adicionar</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('loja').innerHTML = h;
+  renderPaginacao(totalPaginas);
+}
+
+function renderPaginacao(total){ let h=""; for(let i=1;i<=total;i++){ h+=`<button class="btn-pag ${i===paginaAtual?'active':''}" onclick="irParaPagina(${i})">${i}</button>`; } document.getElementById('paginacao').innerHTML = h; }
+function toggleFav(nome){ if(favs.includes(nome)){ favs = favs.filter(f=>f!==nome); } else { favs.push(nome); } localStorage.setItem("favs", JSON.stringify(favs)); renderProdutos(); }
+function abrirImg(src){ document.getElementById('modal').style.display="flex"; document.getElementById('imgGrande').src=src; }
+function fecharModal(){ document.getElementById('modal').style.display="none"; }
+function add(id){ let produto = db.find(p=>p.id===id); let precoFinal = (produto.promo && produto.precoPromo) ? produto.precoPromo : produto.preco; let ex = cart.find(p=>p.id===id); if(ex) ex.qtd++; else cart.push({...produto, preco:precoFinal, qtd:1}); guardar(); atualizar(); }
+function mais(i){ cart[i].qtd++; guardar(); atualizar(); }
+function menos(i){ cart[i].qtd--; if(cart[i].qtd<=0) cart.splice(i,1); guardar(); atualizar(); }
+function limparCarrinho(){ if(confirm("Anular pedido?")){ cart=[]; guardar(); atualizar(); } }
+function atualizar(){
+  let total=0; let h="";
+  cart.forEach((p,i)=>{ let sub = p.qtd * p.preco; total+=sub; h+=`<div class="item-cart"><span>#${p.id} - ${p.nome} x${p.qtd}</span><div><button onclick="menos(${i})">➖</button><button onclick="mais(${i})">➕</button></div></div>`; });
+  document.getElementById('itens-carrinho').innerHTML = h;
+  let envio = document.getElementById('envio').value;
+  document.getElementById('total-carrinho').innerHTML = `<strong>Total: ${total.toFixed(2)}€ | Envio: ${envio}</strong>`;
+}
+function gerarTexto(){
+  let n = document.getElementById('cliente').value;
+  let t = document.getElementById('telefone').value;
+  let m = document.getElementById('morada').value;
+  let envio = document.getElementById('envio').value;
+  if(cart.length === 0){ alert("Carrinho vazio!"); return ""; }
+  let total = cart.reduce((acc,p)=>acc + (p.qtd * p.preco),0);
+  let msg = "Pedido\nNome: " + n + "\nTel: " + t + "\nTipo de envio: " + envio + "\n";
+  if(envio === "Levantamento"){ msg += "Nota: Cliente irá levantar a encomenda pessoalmente.\n"; }
+  msg += "\n";
+  cart.forEach(p=>{ msg += "#" + p.id + " - " + p.nome + " x" + p.qtd + "\n"; });
+  msg += "\nMorada: " + m;
+  msg += `\nTotal a pagar: ${total.toFixed(2)}€`;
+  return encodeURIComponent(msg);
+}
+function finalizar(){ let texto = gerarTexto(); if(!texto) return; window.open(`https://wa.me/351938655760?text=${texto}`); }
+function copiar(){ let texto = decodeURIComponent(gerarTexto()); navigator.clipboard.writeText(texto); alert("Pedido copiado!"); }
+function mbway(){ alert("Paga para 938655760 e envia comprovativo 😊"); }
+
+</script>
 </body>
 </html>
