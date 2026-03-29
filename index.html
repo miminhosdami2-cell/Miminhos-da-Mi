@@ -5,11 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Miminhos da Mi</title>
 
+<!-- FAVICON -->
 <link rel="icon" type="image/png" sizes="32x32" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
-
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#db2777">
-
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 
 <style>
@@ -30,22 +29,18 @@ display:none;
 align-items:center;
 justify-content:space-between;
 z-index:9999;
-animation:slideUp 0.4s ease;
 }
 #installBanner .text{ font-size:14px; }
 #installBanner button{ border:none; padding:8px 12px; border-radius:8px; cursor:pointer; }
 #installBtn{ background:#db2777; color:white; }
 #closeBanner{ background:#eee; }
 
-@keyframes slideUp{
-from{ transform:translateY(100px); opacity:0; }
-to{ transform:translateY(0); opacity:1; }
-}
-
-/* ===== RESTO ORIGINAL ===== */
+/* ===== SPLASH ===== */
 #splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff5f7; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
 #splash img { width: 160px; border-radius: 20px; margin-bottom: 15px; }
 #splash h2 { font-size: 30px; color: var(--rosa); font-family: 'Great Vibes', cursive; }
+
+/* ===== RESTO ORIGINAL ===== */
 h1 { text-align:center; margin-bottom:10px; }
 h1 .logo { max-width:150px; width:100%; height:auto; border-radius:15px; display:block; margin:0 auto; }
 h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:normal; font-family:'Great Vibes', cursive; }
@@ -128,7 +123,6 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
 </div>
 
 <script>
-
 // SPLASH
 window.addEventListener("load", () => {
 setTimeout(() => { document.getElementById("splash").style.display = "none"; }, 2000);
@@ -141,53 +135,149 @@ navigator.serviceWorker.register('sw.js');
 });
 }
 
-// ⚠️ AQUI FICA TODO O TEU JS ORIGINAL (API, carrinho, etc.)
-// 👉 NÃO ALTERADO
+// ==========================
+// CÓDIGO ORIGINAL DA LOJA
+// ==========================
 
-/* ===== PWA PREMIUM ===== */
+const API = 'https://sheetdb.io/api/v1/w6qar1a3hima3';
+let db = [];
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let favs = JSON.parse(localStorage.getItem("favs")) || [];
+let categoriaAtual = "";
+let paginaAtual = 1;
+const itensPorPagina = 10;
 
+function guardar(){ localStorage.setItem("cart", JSON.stringify(cart)); }
+
+function carregarProdutos(data){
+  db = data.map(p=>({
+    ...p,
+    id: parseInt(p.id),
+    preco: parseFloat(p.preco),
+    precoPromo: p.precoPromo ? parseFloat(p.precoPromo) : null,
+    promo: p.promo === "sim",
+    categoria: p.categoria || "Outros"
+  }));
+
+  let categorias = [...new Set(db.map(p=>p.categoria))];
+  document.getElementById('tabs').innerHTML =
+    categorias.map((c,i)=>`<div class="tab ${i==0?'active':''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
+  if(!categoriaAtual) categoriaAtual = categorias[0];
+  renderProdutos();
+  atualizar();
+}
+
+fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); });
+setInterval(()=>{ fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); }); }, 30000);
+
+function mudar(c,el){ categoriaAtual=c; paginaAtual=1; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); renderProdutos(); }
+function irParaPagina(num){ paginaAtual=num; renderProdutos(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function renderProdutos(){
+  let termo = document.getElementById('pesquisa').value.toLowerCase();
+  let lista = db.filter(p=> p.categoria==categoriaAtual && p.nome.toLowerCase().includes(termo));
+  let totalPaginas = Math.ceil(lista.length / itensPorPagina);
+  let inicio = (paginaAtual - 1) * itensPorPagina;
+  let itens = lista.slice(inicio, inicio + itensPorPagina);
+  let h="";
+  itens.forEach(p=>{
+    let fav = favs.includes(p.nome) ? "❤️" : "🤍";
+    let precoHTML = "";
+    if(p.promo && p.precoPromo){
+      precoHTML = `<p style="text-decoration:line-through;color:#999;">${p.preco.toFixed(2)}€</p>
+      <p style="color:red;font-weight:bold;">${p.precoPromo.toFixed(2)}€ 🔥</p>`;
+    } else { precoHTML = `<p>${p.preco.toFixed(2)}€</p>`; }
+    h+=`<div class="card">
+      <div class="card-wrap">
+        ${p.promo ? '<div class="badge">PROMO</div>' : ''}
+        <span class="fav" onclick="toggleFav('${p.nome}')">${fav}</span>
+        <img src="${p.img}" class="img-p" onclick="abrirImg('${p.img}')">
+      </div>
+      <div class="info">
+        <h3>#${p.id} - ${p.nome}</h3>
+        ${precoHTML}
+        <button class="btn-add" onclick="add(${p.id})">Adicionar</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('loja').innerHTML = h;
+  renderPaginacao(totalPaginas);
+}
+
+function renderPaginacao(total){ let h=""; for(let i=1;i<=total;i++){ h+=`<button class="btn-pag ${i===paginaAtual?'active':''}" onclick="irParaPagina(${i})">${i}</button>`; } document.getElementById('paginacao').innerHTML = h; }
+function toggleFav(nome){ if(favs.includes(nome)){ favs = favs.filter(f=>f!==nome); } else { favs.push(nome); } localStorage.setItem("favs", JSON.stringify(favs)); renderProdutos(); }
+function abrirImg(src){ document.getElementById('modal').style.display="flex"; document.getElementById('imgGrande').src=src; }
+function fecharModal(){ document.getElementById('modal').style.display="none"; }
+
+function add(id){ let produto = db.find(p=>p.id===id); let precoFinal = (produto.promo && produto.precoPromo) ? produto.precoPromo : produto.preco; let ex = cart.find(p=>p.id===id); if(ex) ex.qtd++; else cart.push({...produto, preco:precoFinal, qtd:1}); guardar(); atualizar(); }
+function mais(i){ cart[i].qtd++; guardar(); atualizar(); }
+function menos(i){ cart[i].qtd--; if(cart[i].qtd<=0) cart.splice(i,1); guardar(); atualizar(); }
+function limparCarrinho(){ if(confirm("Anular pedido?")){ cart=[]; guardar(); atualizar(); } }
+
+function atualizar(){
+  let total=0; let h="";
+  cart.forEach((p,i)=>{ let sub = p.qtd * p.preco; total+=sub; h+=`<div class="item-cart"><span>#${p.id} - ${p.nome} x${p.qtd}</span><div><button onclick="menos(${i})">➖</button><button onclick="mais(${i})">➕</button></div></div>`; });
+  document.getElementById('itens-carrinho').innerHTML = h;
+  let envio = document.getElementById('envio').value;
+  document.getElementById('total-carrinho').innerHTML = `<strong>Total: ${total.toFixed(2)}€ | Envio: ${envio}</strong>`;
+}
+
+function gerarTexto(){
+  let n = document.getElementById('cliente').value;
+  let t = document.getElementById('telefone').value;
+  let m = document.getElementById('morada').value;
+  let envio = document.getElementById('envio').value;
+  if(cart.length === 0){ alert("Carrinho vazio!"); return ""; }
+  let total = cart.reduce((acc,p)=>acc + (p.qtd * p.preco),0);
+  let msg = "Pedido\nNome: " + n + "\nTel: " + t + "\nTipo de envio: " + envio + "\n";
+  if(envio === "Levantamento"){ msg += "Nota: Cliente irá levantar a encomenda pessoalmente.\n"; }
+  msg += "\n";
+  cart.forEach(p=>{ msg += "#" + p.id + " - " + p.nome + " x" + p.qtd + "\n"; });
+  msg += "\nMorada: " + m;
+  msg += `\nTotal a pagar: ${total.toFixed(2)}€`;
+  return encodeURIComponent(msg);
+}
+
+function finalizar(){ let texto = gerarTexto(); if(!texto) return; window.open(`https://wa.me/351938655760?text=${texto}`); }
+function copiar(){ let texto = decodeURIComponent(gerarTexto()); navigator.clipboard.writeText(texto); alert("Pedido copiado!"); }
+function mbway(){ alert("Paga para 938655760 e envia comprovativo 😊"); }
+
+// ==========================
+// BANNER PREMIUM
+// ==========================
 let deferredPrompt;
 const banner = document.getElementById("installBanner");
 const installBtn = document.getElementById("installBtn");
 const closeBtn = document.getElementById("closeBanner");
 
-function showBanner(){
-  if(localStorage.getItem("appInstalled")) return;
-  const last = localStorage.getItem("installClosed");
-  if(last && Date.now() - last < 86400000) return;
-  banner.style.display = "flex";
-}
-
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  setTimeout(showBanner, 4000);
+  setTimeout(() => {
+    if (!localStorage.getItem("appInstalled")) banner.style.display = "flex";
+  }, 4000);
 });
 
 installBtn.addEventListener('click', async () => {
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
   const { outcome } = await deferredPrompt.userChoice;
-
   if (outcome === 'accepted') {
     localStorage.setItem("appInstalled", "true");
     banner.style.display = "none";
   }
-
   deferredPrompt = null;
 });
 
 closeBtn.addEventListener('click', () => {
   banner.style.display = "none";
-  localStorage.setItem("installClosed", Date.now());
 });
 
 window.addEventListener('appinstalled', () => {
   localStorage.setItem("appInstalled", "true");
   banner.style.display = "none";
 });
-
 </script>
 
 </body>
-</html>
+  </html>
