@@ -29,6 +29,7 @@ display:none;
 align-items:center;
 justify-content:space-between;
 z-index:9999;
+transition: all 0.5s ease;
 }
 #installBanner .text{ font-size:14px; }
 #installBanner button{ border:none; padding:8px 12px; border-radius:8px; cursor:pointer; }
@@ -243,7 +244,7 @@ function copiar(){ let texto = decodeURIComponent(gerarTexto()); navigator.clipb
 function mbway(){ alert("Paga para 938655760 e envia comprovativo 😊"); }
 
 // ==========================
-// BANNER PREMIUM
+// BANNER PREMIUM TEMPORÁRIO
 // ==========================
 let deferredPrompt;
 const banner = document.getElementById("installBanner");
@@ -253,31 +254,27 @@ const closeBtn = document.getElementById("closeBanner");
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
+
   setTimeout(() => {
-    if (!localStorage.getItem("appInstalled")) banner.style.display = "flex";
-  }, 4000);
+    banner.style.display = "flex";
+
+    // Desaparece automaticamente depois de 8s
+    setTimeout(()=>{ banner.style.display = "none"; }, 8000);
+
+  }, 5000); // aparece 5s após carregar
 });
 
 installBtn.addEventListener('click', async () => {
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
   const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === 'accepted') {
-    localStorage.setItem("appInstalled", "true");
-    banner.style.display = "none";
-  }
   deferredPrompt = null;
-});
-
-closeBtn.addEventListener('click', () => {
   banner.style.display = "none";
 });
 
-window.addEventListener('appinstalled', () => {
-  localStorage.setItem("appInstalled", "true");
-  banner.style.display = "none";
-});
+closeBtn.addEventListener('click', () => { banner.style.display = "none"; });
+window.addEventListener('appinstalled', () => { banner.style.display = "none"; });
 </script>
 
 </body>
-  </html>
+</html>
