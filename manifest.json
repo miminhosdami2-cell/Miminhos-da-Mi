@@ -1,9 +1,10 @@
 {
   "name": "Miminhos da Mi",
   "short_name": "Miminhos",
-  "start_url": ".",
+  "description": "A loja dos Miminhos da Mi",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#fff5f7",
   "theme_color": "#db2777",
   "icons": [
     {
