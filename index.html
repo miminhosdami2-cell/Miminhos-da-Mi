@@ -105,12 +105,16 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
 </div>
 
 <script>
-// SPLASH
+// ---------------- SPLASH ----------------
 window.addEventListener("load", () => {
-  setTimeout(() => { document.getElementById("splash").style.display = "none"; }, 2000);
+  setTimeout(() => { 
+    document.getElementById("splash").style.display = "none"; 
+    showIosBanner();
+    mostrarBannerAndroid();
+  }, 2000);
 });
 
-// SERVICE WORKER PWA
+// ---------------- SERVICE WORKER ----------------
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('sw.js').then(function(registration) {
@@ -121,7 +125,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// SISTEMA PRODUTOS
+// ---------------- PRODUTOS ----------------
 const API = 'https://sheetdb.io/api/v1/w6qar1a3hima3';
 let db = [];
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -220,18 +224,17 @@ function finalizar(){ let texto = gerarTexto(); if(!texto) return; window.open(`
 function copiar(){ let texto = decodeURIComponent(gerarTexto()); navigator.clipboard.writeText(texto); alert("Pedido copiado!"); }
 function mbway(){ alert("Paga para 938655760 e envia comprovativo 😊"); }
 
-// ================= INSTALL PROMPT =================
+// ================= INSTALL PROMPT AND IOS BANNER =================
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  mostrarBannerAndroid();
 });
 
 function mostrarBannerAndroid() {
   let instalado = localStorage.getItem('app_instalado');
   let tentativas = parseInt(localStorage.getItem('install_attempts')) || 0;
-  if(!instalado && tentativas < 2){
+  if(!instalado && tentativas < 2 && deferredPrompt){
     if(confirm("Quer instalar o App na sua tela inicial?")){
       instalarApp();
     } else {
@@ -253,7 +256,6 @@ function instalarApp() {
   }
 }
 
-// ================= IOS BANNER =================
 function isIos() {
   return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
 }
@@ -267,5 +269,4 @@ function showIosBanner() {
 
 function fecharIosBanner() {
   document.getElementById('ios-banner').style.display = 'none';
-  let tentativas = parseInt(localStorage.getItem('ios_attempts')) || 0;
-  localStorage.set
+  let tentativas = parseInt(localStorage.getItem
