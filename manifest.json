@@ -1,1 +1,20 @@
-
+{
+  "name": "Miminhos da Mi",
+  "short_name": "Miminhos",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#db2777",
+  "icons": [
+    {
+      "src": "https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
