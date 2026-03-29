@@ -4,44 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Miminhos da Mi</title>
-
 <!-- FAVICON -->
 <link rel="icon" type="image/png" sizes="32x32" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
+<link rel="icon" type="image/png" sizes="192x192" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
+<link rel="icon" type="image/png" sizes="512x512" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
+<link rel="apple-touch-icon" sizes="180x180" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
+
+<!-- PWA Manifest -->
 <link rel="manifest" href="manifest.json">
+
 <meta name="theme-color" content="#db2777">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 
 <style>
 :root { --rosa:#db2777; --fundo:#fff5f7; }
 body { font-family:sans-serif; max-width:450px; margin:auto; padding:15px; background:var(--fundo); }
-
-/* ===== BANNER PREMIUM ===== */
-#installBanner{
-position:fixed;
-bottom:15px;
-left:15px;
-right:15px;
-background:white;
-border-radius:15px;
-box-shadow:0 8px 25px rgba(0,0,0,0.15);
-padding:15px;
-display:none;
-align-items:center;
-justify-content:space-between;
-z-index:9999;
-transition: all 0.5s ease;
-}
-#installBanner .text{ font-size:14px; }
-#installBanner button{ border:none; padding:8px 12px; border-radius:8px; cursor:pointer; }
-#installBtn{ background:#db2777; color:white; }
-#closeBanner{ background:#eee; }
-
-/* ===== SPLASH ===== */
+/* SPLASH */
 #splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff5f7; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
 #splash img { width: 160px; border-radius: 20px; margin-bottom: 15px; }
 #splash h2 { font-size: 30px; color: var(--rosa); font-family: 'Great Vibes', cursive; }
-
-/* ===== RESTO ORIGINAL ===== */
+/* RESTO */
 h1 { text-align:center; margin-bottom:10px; }
 h1 .logo { max-width:150px; width:100%; height:auto; border-radius:15px; display:block; margin:0 auto; }
 h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:normal; font-family:'Great Vibes', cursive; }
@@ -68,18 +53,17 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
 #envio { margin-top:5px; border:1px solid #ddd; border-radius:8px; padding:10px; font-weight:bold; color:#111; }
 </style>
 </head>
-
 <body>
 
 <!-- SPLASH -->
 <div id="splash">
-<img src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZNBpyDNjcgFat1zgMyeFxqRGE_GUxgACpiUAAqaPQVa1bCMYXlu7BzoE.jpg">
-<h2>Olá 👋</h2>
+  <img src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZNBpyDNjcgFat1zgMyeFxqRGE_GUxgACpiUAAqaPQVa1bCMYXlu7BzoE.jpg">
+  <h2>Olá 👋</h2>
 </div>
 
 <h1>
-<img src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZNBpyDNjcgFat1zgMyeFxqRGE_GUxgACpiUAAqaPQVa1bCMYXlu7BzoE.jpg" class="logo">
-<div class="titulo">Miminhos da Mi ✨</div>
+  <img src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZNBpyDNjcgFat1zgMyeFxqRGE_GUxgACpiUAAqaPQVa1bCMYXlu7BzoE.jpg" class="logo">
+  <div class="titulo">Miminhos da Mi ✨</div>
 </h1>
 
 <input class="search" id="pesquisa" placeholder="🔍 Procurar..." oninput="irParaPagina(1)">
@@ -88,59 +72,48 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
 <div class="paginacao" id="paginacao"></div>
 
 <div class="carrinho">
-<h2>🛒 Carrinho</h2>
-<p>💳 MBWay: <strong>938655760</strong></p>
-<div id="itens-carrinho"></div>
-<p id="total-carrinho"></p>
-
-<input id="cliente" placeholder="Nome">
-<input id="telefone" placeholder="Telefone">
-<input id="morada" placeholder="Morada de envio">
-
-<label><strong>Tipo de envio:</strong></label>
-<select id="envio" onchange="atualizar()">
-<option>Levantamento</option>
-<option>CTT Normal</option>
-<option>CTT Registado</option>
-</select>
-
-<button onclick="finalizar()" class="btn-w">WhatsApp</button>
-<button onclick="copiar()" class="btn-w" style="background:#111;">Copiar Pedido</button>
-<button onclick="mbway()" class="btn-w" style="background:#555;">Pagar MBWay</button>
-<button onclick="limparCarrinho()" class="btn-w" style="background:#dc2626;">❌ Anular Pedido</button>
+  <h2>🛒 Carrinho</h2>
+  <p>💳 MBWay: <strong>938655760</strong></p>
+  <div id="itens-carrinho"></div>
+  <p id="total-carrinho"></p>
+  <input id="cliente" placeholder="Nome">
+  <input id="telefone" placeholder="Telefone">
+  <input id="morada" placeholder="Morada de envio">
+  <label><strong>Tipo de envio:</strong></label>
+  <select id="envio" onchange="atualizar()">
+    <option>Levantamento</option>
+    <option>CTT Normal</option>
+    <option>CTT Registado</option>
+  </select>
+  <button onclick="finalizar()" class="btn-w">WhatsApp</button>
+  <button onclick="copiar()" class="btn-w" style="background:#111;">Copiar Pedido</button>
+  <button onclick="mbway()" class="btn-w" style="background:#555;">Pagar MBWay</button>
+  <button onclick="limparCarrinho()" class="btn-w" style="background:#dc2626;">❌ Anular Pedido</button>
 </div>
 
 <div class="modal" id="modal" onclick="fecharModal()">
-<img id="imgGrande">
-</div>
-
-<!-- ===== BANNER ===== -->
-<div id="installBanner">
-  <div class="text">📲 Instala a app para acesso rápido</div>
-  <div style="display:flex; gap:5px;">
-    <button id="installBtn">Instalar</button>
-    <button id="closeBanner">✖</button>
-  </div>
+  <img id="imgGrande">
 </div>
 
 <script>
 // SPLASH
 window.addEventListener("load", () => {
-setTimeout(() => { document.getElementById("splash").style.display = "none"; }, 2000);
+  setTimeout(() => { document.getElementById("splash").style.display = "none"; }, 2000);
 });
 
-// SERVICE WORKER
+// SERVICE WORKER PWA
 if ('serviceWorker' in navigator) {
-window.addEventListener('load', function() {
-navigator.serviceWorker.register('sw.js');
-});
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js').then(function(registration) {
+      console.log('Service Worker registrado com sucesso:', registration.scope);
+    }, function(err) {
+      console.log('Falha ao registrar Service Worker:', err);
+    });
+  });
 }
 
-// ==========================
-// CÓDIGO ORIGINAL DA LOJA
-// ==========================
-
-const API = 'https://sheetdb.io/api/v1/w6qar1a3hima3';
+// SISTEMA PRODUTOS
+const API = 'https://sheetdb.io/api/v1/w6qar1a3hima3'; // <--- LINK ATUALIZADO
 let db = [];
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let favs = JSON.parse(localStorage.getItem("favs")) || [];
@@ -159,7 +132,6 @@ function carregarProdutos(data){
     promo: p.promo === "sim",
     categoria: p.categoria || "Outros"
   }));
-
   let categorias = [...new Set(db.map(p=>p.categoria))];
   document.getElementById('tabs').innerHTML =
     categorias.map((c,i)=>`<div class="tab ${i==0?'active':''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
@@ -209,12 +181,10 @@ function renderPaginacao(total){ let h=""; for(let i=1;i<=total;i++){ h+=`<butto
 function toggleFav(nome){ if(favs.includes(nome)){ favs = favs.filter(f=>f!==nome); } else { favs.push(nome); } localStorage.setItem("favs", JSON.stringify(favs)); renderProdutos(); }
 function abrirImg(src){ document.getElementById('modal').style.display="flex"; document.getElementById('imgGrande').src=src; }
 function fecharModal(){ document.getElementById('modal').style.display="none"; }
-
 function add(id){ let produto = db.find(p=>p.id===id); let precoFinal = (produto.promo && produto.precoPromo) ? produto.precoPromo : produto.preco; let ex = cart.find(p=>p.id===id); if(ex) ex.qtd++; else cart.push({...produto, preco:precoFinal, qtd:1}); guardar(); atualizar(); }
 function mais(i){ cart[i].qtd++; guardar(); atualizar(); }
 function menos(i){ cart[i].qtd--; if(cart[i].qtd<=0) cart.splice(i,1); guardar(); atualizar(); }
 function limparCarrinho(){ if(confirm("Anular pedido?")){ cart=[]; guardar(); atualizar(); } }
-
 function atualizar(){
   let total=0; let h="";
   cart.forEach((p,i)=>{ let sub = p.qtd * p.preco; total+=sub; h+=`<div class="item-cart"><span>#${p.id} - ${p.nome} x${p.qtd}</span><div><button onclick="menos(${i})">➖</button><button onclick="mais(${i})">➕</button></div></div>`; });
@@ -222,7 +192,6 @@ function atualizar(){
   let envio = document.getElementById('envio').value;
   document.getElementById('total-carrinho').innerHTML = `<strong>Total: ${total.toFixed(2)}€ | Envio: ${envio}</strong>`;
 }
-
 function gerarTexto(){
   let n = document.getElementById('cliente').value;
   let t = document.getElementById('telefone').value;
@@ -238,43 +207,10 @@ function gerarTexto(){
   msg += `\nTotal a pagar: ${total.toFixed(2)}€`;
   return encodeURIComponent(msg);
 }
-
 function finalizar(){ let texto = gerarTexto(); if(!texto) return; window.open(`https://wa.me/351938655760?text=${texto}`); }
 function copiar(){ let texto = decodeURIComponent(gerarTexto()); navigator.clipboard.writeText(texto); alert("Pedido copiado!"); }
 function mbway(){ alert("Paga para 938655760 e envia comprovativo 😊"); }
 
-// ==========================
-// BANNER PREMIUM TEMPORÁRIO
-// ==========================
-let deferredPrompt;
-const banner = document.getElementById("installBanner");
-const installBtn = document.getElementById("installBtn");
-const closeBtn = document.getElementById("closeBanner");
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-
-  setTimeout(() => {
-    banner.style.display = "flex";
-
-    // Desaparece automaticamente depois de 8s
-    setTimeout(()=>{ banner.style.display = "none"; }, 8000);
-
-  }, 5000); // aparece 5s após carregar
-});
-
-installBtn.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  banner.style.display = "none";
-});
-
-closeBtn.addEventListener('click', () => { banner.style.display = "none"; });
-window.addEventListener('appinstalled', () => { banner.style.display = "none"; });
 </script>
-
 </body>
 </html>
