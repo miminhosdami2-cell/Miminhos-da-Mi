@@ -26,6 +26,9 @@ body { font-family:sans-serif; max-width:450px; margin:auto; padding:15px; backg
 #splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff5f7; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
 #splash img { width: 160px; border-radius: 20px; margin-bottom: 15px; }
 #splash h2 { font-size: 30px; color: var(--rosa); font-family: 'Great Vibes', cursive; }
+/* BANNER IOS */
+#ios-banner { display:none; background:#ffe6f0; padding:10px; text-align:center; border-radius:10px; margin-bottom:10px; }
+#ios-banner button { background:var(--rosa); color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; margin-top:5px; }
 /* RESTO */
 h1 { text-align:center; margin-bottom:10px; }
 h1 .logo { max-width:150px; width:100%; height:auto; border-radius:15px; display:block; margin:0 auto; }
@@ -59,6 +62,12 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
 <div id="splash">
   <img src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZNBpyDNjcgFat1zgMyeFxqRGE_GUxgACpiUAAqaPQVa1bCMYXlu7BzoE.jpg">
   <h2>Olá 👋</h2>
+</div>
+
+<!-- BANNER IOS -->
+<div id="ios-banner">
+  <p>Para instalar, clique no botão de Compartilhar e depois "Adicionar à Tela de Início".</p>
+  <button onclick="fecharIosBanner()">Fechar</button>
 </div>
 
 <h1>
@@ -113,7 +122,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // SISTEMA PRODUTOS
-const API = 'https://sheetdb.io/api/v1/w6qar1a3hima3'; // <--- LINK ATUALIZADO
+const API = 'https://sheetdb.io/api/v1/w6qar1a3hima3';
 let db = [];
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let favs = JSON.parse(localStorage.getItem("favs")) || [];
@@ -211,6 +220,52 @@ function finalizar(){ let texto = gerarTexto(); if(!texto) return; window.open(`
 function copiar(){ let texto = decodeURIComponent(gerarTexto()); navigator.clipboard.writeText(texto); alert("Pedido copiado!"); }
 function mbway(){ alert("Paga para 938655760 e envia comprovativo 😊"); }
 
-</script>
-</body>
-</html>
+// ================= INSTALL PROMPT =================
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  mostrarBannerAndroid();
+});
+
+function mostrarBannerAndroid() {
+  let instalado = localStorage.getItem('app_instalado');
+  let tentativas = parseInt(localStorage.getItem('install_attempts')) || 0;
+  if(!instalado && tentativas < 2){
+    if(confirm("Quer instalar o App na sua tela inicial?")){
+      instalarApp();
+    } else {
+      localStorage.setItem('install_attempts', tentativas + 1);
+    }
+  }
+}
+
+function instalarApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if(choiceResult.outcome === 'accepted'){
+        localStorage.setItem('app_instalado','sim');
+        alert('App instalado! ✨');
+      }
+      deferredPrompt = null;
+    });
+  }
+}
+
+// ================= IOS BANNER =================
+function isIos() {
+  return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+}
+
+function showIosBanner() {
+  let tentativas = parseInt(localStorage.getItem('ios_attempts')) || 0;
+  if(isIos() && !localStorage.getItem('ios_instalado') && tentativas < 2){
+    document.getElementById('ios-banner').style.display = 'block';
+  }
+}
+
+function fecharIosBanner() {
+  document.getElementById('ios-banner').style.display = 'none';
+  let tentativas = parseInt(localStorage.getItem('ios_attempts')) || 0;
+  localStorage.set
