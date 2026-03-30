@@ -42,8 +42,9 @@ h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:norm
 .paginacao { display:flex; justify-content:center; gap:8px; margin:20px 0; flex-wrap:wrap; }
 .btn-pag { padding:8px 12px; border:1px solid #ddd; background:white; border-radius:5px; cursor:pointer; }
 .btn-pag.active { background:var(--rosa); color:white; }
-.modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; }
-.modal img { max-width:90%; border-radius:10px; }
+/* MODAL MELHORADO */
+.modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:none; justify-content:center; align-items:center; z-index:10000; }
+.modal img { max-width:95%; max-height:90%; border-radius:10px; border: 2px solid white; }
 .carrinho { background:white; padding:15px; border-radius:15px; margin-top:30px; border: 1px solid var(--rosa); }
 .btn-w { background:#25D366; color:white; padding:12px; border:none; width:100%; border-radius:10px; margin-top:8px; cursor:pointer; }
 .item-cart { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
@@ -108,8 +109,6 @@ const API = 'https://script.google.com/macros/s/AKfycbw7iXZ525CvJqAHfBR23OsiarAx
 let db = [];
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let favs = JSON.parse(localStorage.getItem("favs")) || [];
-
-// MEMÓRIA DE NAVEGAÇÃO
 let categoriaAtual = localStorage.getItem("ultimaCat") || ""; 
 let paginaAtual = 1;
 const itensPorPagina = 10;
@@ -125,15 +124,10 @@ function carregarProdutos(data){
     promo: p.promo === "sim",
     categoria: p.categoria || "Outros"
   }));
-  
   let categorias = [...new Set(db.map(p=>p.categoria))];
-  
-  // Se a última categoria guardada não existir mais, volta para a primeira
   if(!categorias.includes(categoriaAtual)) categoriaAtual = categorias[0];
-
   document.getElementById('tabs').innerHTML =
     categorias.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
-  
   renderProdutos();
   atualizar();
 }
@@ -144,7 +138,7 @@ setInterval(()=>{ fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(dat
 function mudar(c,el){ 
   categoriaAtual = c; 
   paginaAtual = 1; 
-  localStorage.setItem("ultimaCat", c); // Guarda na memória
+  localStorage.setItem("ultimaCat", c); 
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); 
   el.classList.add('active'); 
   renderProdutos(); 
@@ -228,12 +222,10 @@ function finalizar(){
   let envio = document.getElementById('envio').value;
   if(cart.length === 0) return alert("Carrinho vazio!");
   if(!n) return alert("Indique o seu nome.");
-  
   let total = cart.reduce((acc,p)=>acc + (p.qtd * p.preco),0);
   let msg = `*Pedido Miminhos da Mi*\n*Cliente:* ${n}\n*Tel:* ${t}\n*Envio:* ${envio}\n*Morada:* ${m}\n\n*Itens:*\n`;
   cart.forEach(p=>{ msg += `• #${p.id} - ${p.nome} (x${p.qtd}) - ${(p.qtd*p.preco).toFixed(2)}€\n`; });
   msg += `\n*TOTAL: ${total.toFixed(2)}€*`;
-  
   window.open(`https://wa.me/351938655760?text=${encodeURIComponent(msg)}`);
 }
 
@@ -246,8 +238,29 @@ function copiar(){
 }
 
 function mbway(){ alert("Pagar para: 938655760\nEnvie o comprovativo pelo WhatsApp. 😊"); }
-function abrirImg(src){ document.getElementById('modal').style.display="flex"; document.getElementById('imgGrande').src=src; }
-function fecharModal(){ document.getElementById('modal').style.display="none"; }
+
+// --- LOGICA DO MODAL COM CONTROLO DE HISTORICO ---
+function abrirImg(src){ 
+  document.getElementById('modal').style.display="flex"; 
+  document.getElementById('imgGrande').src=src;
+  // Cria um estado no histórico para que o botão "Voltar" funcione
+  history.pushState({ modalAberto: true }, ""); 
+}
+
+function fecharModal(){ 
+  document.getElementById('modal').style.display="none"; 
+  // Se fechamos manualmente clicando na imagem, removemos o estado do histórico para não acumular
+  if(history.state && history.state.modalAberto){
+    history.back();
+  }
+}
+
+// Escuta o botão "Voltar" do telemóvel/navegador
+window.addEventListener('popstate', function(event) {
+  // Quando o utilizador clica em voltar, escondemos o modal sem sair do site
+  document.getElementById('modal').style.display="none";
+});
+
 </script>
 </body>
 </html>
