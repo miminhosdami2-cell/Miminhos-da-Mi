@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
@@ -33,6 +33,7 @@ h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:norm
 .card { background:white; border-radius:15px; margin-bottom:20px; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
 .img-p { width:100%; height:220px; object-fit:cover; cursor:pointer; }
 .info { padding:15px; text-align:center; }
+.nome-clicavel { cursor:pointer; color:var(--rosa); text-decoration:underline; margin:0 0 10px 0; }
 .btn-add { background:var(--rosa); color:white; border:none; padding:10px; width:100%; border-radius:10px; cursor:pointer; }
 .card-wrap { position:relative; }
 .badge { position:absolute; left:10px; top:10px; background:red; color:white; padding:5px 8px; border-radius:8px; font-size:12px; font-weight:bold; }
@@ -40,8 +41,15 @@ h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:norm
 .paginacao { display:flex; justify-content:center; gap:8px; margin:20px 0; flex-wrap:wrap; }
 .btn-pag { padding:8px 12px; border:1px solid #ddd; background:white; border-radius:5px; cursor:pointer; }
 .btn-pag.active { background:var(--rosa); color:white; }
+
+/* MODAIS */
 .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:none; justify-content:center; align-items:center; z-index:10000; }
 .modal img { max-width:95%; max-height:90%; border-radius:10px; border: 2px solid white; }
+.modal-texto { background:white; padding:25px; border-radius:20px; max-width:85%; text-align:center; position:relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+.modal-texto h3 { color:var(--rosa); margin-top:0; font-family:'Great Vibes', cursive; font-size:28px; }
+.modal-texto p { line-height:1.5; color:#444; }
+.btn-fechar { background:var(--rosa); color:white; border:none; padding:8px 20px; border-radius:10px; margin-top:15px; cursor:pointer; }
+
 .carrinho { background:white; padding:15px; border-radius:15px; margin-top:30px; border: 1px solid var(--rosa); }
 .btn-w { background:#25D366; color:white; padding:12px; border:none; width:100%; border-radius:10px; margin-top:8px; cursor:pointer; }
 .item-cart { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
@@ -85,8 +93,18 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
   <button onclick="limparCarrinho()" class="btn-w" style="background:#dc2626;">❌ Anular Pedido</button>
 </div>
 
-<div class="modal" id="modal" onclick="fecharModal()">
+<!-- MODAL IMAGEM -->
+<div class="modal" id="modalImg" onclick="fecharModal()">
   <img id="imgGrande">
+</div>
+
+<!-- MODAL SIGNIFICADO -->
+<div class="modal" id="modalTexto" onclick="fecharModal()">
+  <div class="modal-texto" onclick="event.stopPropagation()">
+    <h3 id="tituloPedra"></h3>
+    <p id="corpoSignificado"></p>
+    <button class="btn-fechar" onclick="fecharModal()">Fechar</button>
+  </div>
 </div>
 
 <script>
@@ -115,10 +133,10 @@ function carregarProdutos(data){
     preco: parseFloat(p.preco),
     precoPromo: p.precoPromo ? parseFloat(p.precoPromo) : null,
     promo: p.promo === "sim",
-    categoria: p.categoria || "Outros"
+    categoria: p.categoria || "Outros",
+    significado: p.significado || "" // Nova coluna!
   }));
   
-  // LOGICA DE CATEGORIAS + PROMOÇÕES AUTOMÁTICAS
   let categoriasBase = [...new Set(db.map(p=>p.categoria))];
   let temPromos = db.some(p => p.promo);
   let categoriasFinal = temPromos ? ["🔥 Promoções", ...categoriasBase] : categoriasBase;
@@ -148,8 +166,6 @@ function irParaPagina(num){ paginaAtual=num; renderProdutos(); window.scrollTo({
 
 function renderProdutos(){
   let termo = document.getElementById('pesquisa').value.toLowerCase();
-  
-  // Filtro inteligente: Se for categoria "Promoções", mostra tudo o que é promo: sim
   let lista = db.filter(p => {
     let matchesTermo = p.nome.toLowerCase().includes(termo);
     if(categoriaAtual === "🔥 Promoções") return p.promo && matchesTermo;
@@ -174,7 +190,7 @@ function renderProdutos(){
         <img src="${p.img}" class="img-p" onclick="abrirImg('${p.img}')">
       </div>
       <div class="info">
-        <h3 style="margin:0 0 10px 0;">#${p.id} - ${p.nome}</h3>
+        <h3 class="nome-clicavel" onclick="abrirSignificado('${p.nome}', '${p.significado.replace(/'/g, "\\'")}')">#${p.id} - ${p.nome} ℹ️</h3>
         ${precoHTML}
         <button class="btn-add" onclick="add(${p.id})">Adicionar</button>
       </div>
@@ -247,19 +263,30 @@ function copiar(){
 
 function mbway(){ alert("Pagar para: 938655760\nEnvie o comprovativo pelo WhatsApp. 😊"); }
 
+// --- LOGICA DE MODAIS ---
 function abrirImg(src){ 
-  document.getElementById('modal').style.display="flex"; 
+  document.getElementById('modalImg').style.display="flex"; 
   document.getElementById('imgGrande').src=src;
   history.pushState({ modalAberto: true }, ""); 
 }
 
+function abrirSignificado(nome, texto){
+  if(!texto || texto === "") texto = "O significado desta pedra será adicionado em breve! ✨";
+  document.getElementById('tituloPedra').innerText = nome;
+  document.getElementById('corpoSignificado').innerText = texto;
+  document.getElementById('modalTexto').style.display="flex";
+  history.pushState({ modalAberto: true }, "");
+}
+
 function fecharModal(){ 
-  document.getElementById('modal').style.display="none"; 
+  document.getElementById('modalImg').style.display="none"; 
+  document.getElementById('modalTexto').style.display="none"; 
   if(history.state && history.state.modalAberto) history.back();
 }
 
 window.addEventListener('popstate', function(event) {
-  document.getElementById('modal').style.display="none";
+  document.getElementById('modalImg').style.display="none";
+  document.getElementById('modalTexto').style.display="none";
 });
 
 </script>
