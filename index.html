@@ -112,7 +112,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// SISTEMA PRODUTOS - LINK ATUALIZADO ABAIXO
+// SISTEMA PRODUTOS - LINK ATUALIZADO
 const API = 'https://script.google.com/macros/s/AKfycbw7iXZ525CvJqAHfBR23OsiarAxrjFU_vaHA75JA7G2hjy9Xany3bvKNdkpNQP7Jch3/exec'; 
 let db = [];
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -141,7 +141,9 @@ function carregarProdutos(data){
 }
 
 fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); });
-setInterval(()=>{ fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); }); }, 30000);
+
+// ATUALIZAÇÃO MUDADA PARA 120000ms (2 MINUTOS) PARA MAIOR ESTABILIDADE
+setInterval(()=>{ fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); }); }, 120000);
 
 function mudar(c,el){ categoriaAtual=c; paginaAtual=1; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); renderProdutos(); }
 function irParaPagina(num){ paginaAtual=num; renderProdutos(); window.scrollTo({top:0,behavior:'smooth'}); }
@@ -213,4 +215,5 @@ function mbway(){ alert("Paga para 938655760 e envia comprovativo 😊"); }
 
 </script>
 </body>
-</html>
+  </html>
+  
