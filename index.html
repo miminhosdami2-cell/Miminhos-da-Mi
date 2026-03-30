@@ -22,8 +22,8 @@
 <style>
 :root { --rosa:#db2777; --fundo:#fff5f7; }
 body { font-family:sans-serif; max-width:450px; margin:auto; padding:15px; background:var(--fundo); }
-/* SPLASH INTELIGENTE */
-#splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff5f7; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
+/* SPLASH DIRETO */
+#splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff5f7; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
 #splash img { width: 160px; border-radius: 20px; margin-bottom: 15px; }
 #splash h2 { font-size: 30px; color: var(--rosa); font-family: 'Great Vibes', cursive; }
 /* RESTO */
@@ -55,7 +55,7 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
 </head>
 <body>
 
-<!-- SPLASH INTELIGENTE -->
+<!-- SPLASH -->
 <div id="splash">
   <img src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZNBpyDNjcgFat1zgMyeFxqRGE_GUxgACpiUAAqaPQVa1bCMYXlu7BzoE.jpg">
   <h2>Olá 👋</h2>
@@ -96,17 +96,9 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
 </div>
 
 <script>
-// CONTROLO DE SPLASH INTELIGENTE (SÓ MOSTRA UMA VEZ POR SESSÃO)
+// SPLASH VOLTOU AO ORIGINAL MAS MAIS RÁPIDO (1 SEGUNDO)
 window.addEventListener("load", () => {
-  const foiVisto = sessionStorage.getItem("splashVisto");
-  if (!foiVisto) {
-    const splash = document.getElementById("splash");
-    splash.style.display = "flex";
-    setTimeout(() => { 
-      splash.style.display = "none"; 
-      sessionStorage.setItem("splashVisto", "true");
-    }, 1500); // 1.5 segundos na primeira vez
-  }
+  setTimeout(() => { document.getElementById("splash").style.display = "none"; }, 1000);
 });
 
 // SERVICE WORKER PWA
@@ -118,12 +110,12 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// SISTEMA PRODUTOS - LINK GOOGLE API
+// SISTEMA PRODUTOS - LINK DA TUA API
 const API = 'https://script.google.com/macros/s/AKfycbw7iXZ525CvJqAHfBR23OsiarAxrjFU_vaHA75JA7G2hjy9Xany3bvKNdkpNQP7Jch3/exec'; 
 let db = [];
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let favs = JSON.parse(localStorage.getItem("favs")) || [];
-let categoriaAtual = localStorage.getItem("ultimaCat") || "";
+let categoriaAtual = "";
 let paginaAtual = 1;
 const itensPorPagina = 10;
 
@@ -140,8 +132,7 @@ function carregarProdutos(data){
   }));
   let categorias = [...new Set(db.map(p=>p.categoria))];
   document.getElementById('tabs').innerHTML =
-    categorias.map((c)=>`<div class="tab ${c === categoriaAtual || (categoriaAtual === "" && c === categorias[0]) ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
-  
+    categorias.map((c,i)=>`<div class="tab ${i==0?'active':''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
   if(!categoriaAtual) categoriaAtual = categorias[0];
   renderProdutos();
   atualizar();
@@ -150,15 +141,7 @@ function carregarProdutos(data){
 fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); });
 setInterval(()=>{ fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); }); }, 120000);
 
-function mudar(c,el){ 
-  categoriaAtual=c; 
-  paginaAtual=1; 
-  localStorage.setItem("ultimaCat", c); // Memoriza a categoria
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); 
-  el.classList.add('active'); 
-  renderProdutos(); 
-}
-
+function mudar(c,el){ categoriaAtual=c; paginaAtual=1; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); renderProdutos(); }
 function irParaPagina(num){ paginaAtual=num; renderProdutos(); window.scrollTo({top:0,behavior:'smooth'}); }
 
 function renderProdutos(){
@@ -192,13 +175,7 @@ function renderProdutos(){
   renderPaginacao(totalPaginas);
 }
 
-function renderPaginacao(total){ 
-  let h=""; 
-  if(total <= 1) { document.getElementById('paginacao').innerHTML = ""; return; }
-  for(let i=1;i<=total;i++){ h+=`<button class="btn-pag ${i===paginaAtual?'active':''}" onclick="irParaPagina(${i})">${i}</button>`; } 
-  document.getElementById('paginacao').innerHTML = h; 
-}
-
+function renderPaginacao(total){ let h=""; for(let i=1;i<=total;i++){ h+=`<button class="btn-pag ${i===paginaAtual?'active':''}" onclick="irParaPagina(${i})">${i}</button>`; } document.getElementById('paginacao').innerHTML = h; }
 function toggleFav(nome){ if(favs.includes(nome)){ favs = favs.filter(f=>f!==nome); } else { favs.push(nome); } localStorage.setItem("favs", JSON.stringify(favs)); renderProdutos(); }
 function abrirImg(src){ document.getElementById('modal').style.display="flex"; document.getElementById('imgGrande').src=src; }
 function fecharModal(){ document.getElementById('modal').style.display="none"; }
@@ -213,7 +190,6 @@ function atualizar(){
   let envio = document.getElementById('envio').value;
   document.getElementById('total-carrinho').innerHTML = `<strong>Total: ${total.toFixed(2)}€ | Envio: ${envio}</strong>`;
 }
-
 function gerarTexto(){
   let n = document.getElementById('cliente').value;
   let t = document.getElementById('telefone').value;
@@ -229,7 +205,6 @@ function gerarTexto(){
   msg += `\nTotal: ${total.toFixed(2)}€`;
   return encodeURIComponent(msg);
 }
-
 function finalizar(){ let texto = gerarTexto(); if(!texto) return; window.open(`https://wa.me/351938655760?text=${texto}`); }
 function copiar(){ let texto = decodeURIComponent(gerarTexto()); navigator.clipboard.writeText(texto); alert("Pedido copiado!"); }
 function mbway(){ alert("MBWay: 938655760 - Envie comprovativo após pagar. 😊"); }
