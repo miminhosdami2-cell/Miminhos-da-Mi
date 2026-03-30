@@ -20,11 +20,9 @@
 <style>
 :root { --rosa:#db2777; --fundo:#fff5f7; }
 body { font-family:sans-serif; max-width:450px; margin:auto; padding:15px; background:var(--fundo); }
-/* SPLASH 2 SEGUNDOS */
 #splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff5f7; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
 #splash img { width: 160px; border-radius: 20px; margin-bottom: 15px; }
 #splash h2 { font-size: 30px; color: var(--rosa); font-family: 'Great Vibes', cursive; }
-/* RESTO */
 h1 { text-align:center; margin-bottom:10px; }
 h1 .logo { max-width:150px; width:100%; height:auto; border-radius:15px; display:block; margin:0 auto; }
 h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:normal; font-family:'Great Vibes', cursive; }
@@ -42,7 +40,6 @@ h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:norm
 .paginacao { display:flex; justify-content:center; gap:8px; margin:20px 0; flex-wrap:wrap; }
 .btn-pag { padding:8px 12px; border:1px solid #ddd; background:white; border-radius:5px; cursor:pointer; }
 .btn-pag.active { background:var(--rosa); color:white; }
-/* MODAL MELHORADO */
 .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:none; justify-content:center; align-items:center; z-index:10000; }
 .modal img { max-width:95%; max-height:90%; border-radius:10px; border: 2px solid white; }
 .carrinho { background:white; padding:15px; border-radius:15px; margin-top:30px; border: 1px solid var(--rosa); }
@@ -93,16 +90,12 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
 </div>
 
 <script>
-// SPLASH 2 SEGUNDOS
 window.addEventListener("load", () => {
   setTimeout(() => { document.getElementById("splash").style.display = "none"; }, 2000);
 });
 
-// SERVICE WORKER
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js');
-  });
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
 }
 
 const API = 'https://script.google.com/macros/s/AKfycbw7iXZ525CvJqAHfBR23OsiarAxrjFU_vaHA75JA7G2hjy9Xany3bvKNdkpNQP7Jch3/exec'; 
@@ -124,10 +117,17 @@ function carregarProdutos(data){
     promo: p.promo === "sim",
     categoria: p.categoria || "Outros"
   }));
-  let categorias = [...new Set(db.map(p=>p.categoria))];
-  if(!categorias.includes(categoriaAtual)) categoriaAtual = categorias[0];
+  
+  // LOGICA DE CATEGORIAS + PROMOÇÕES AUTOMÁTICAS
+  let categoriasBase = [...new Set(db.map(p=>p.categoria))];
+  let temPromos = db.some(p => p.promo);
+  let categoriasFinal = temPromos ? ["🔥 Promoções", ...categoriasBase] : categoriasBase;
+  
+  if(!categoriaAtual || !categoriasFinal.includes(categoriaAtual)) categoriaAtual = categoriasFinal[0];
+
   document.getElementById('tabs').innerHTML =
-    categorias.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
+    categoriasFinal.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
+  
   renderProdutos();
   atualizar();
 }
@@ -148,11 +148,19 @@ function irParaPagina(num){ paginaAtual=num; renderProdutos(); window.scrollTo({
 
 function renderProdutos(){
   let termo = document.getElementById('pesquisa').value.toLowerCase();
-  let lista = db.filter(p=> p.categoria==categoriaAtual && p.nome.toLowerCase().includes(termo));
+  
+  // Filtro inteligente: Se for categoria "Promoções", mostra tudo o que é promo: sim
+  let lista = db.filter(p => {
+    let matchesTermo = p.nome.toLowerCase().includes(termo);
+    if(categoriaAtual === "🔥 Promoções") return p.promo && matchesTermo;
+    return p.categoria === categoriaAtual && matchesTermo;
+  });
+
   let totalPaginas = Math.ceil(lista.length / itensPorPagina);
   let inicio = (paginaAtual - 1) * itensPorPagina;
   let itens = lista.slice(inicio, inicio + itensPorPagina);
   let h="";
+  
   itens.forEach(p=>{
     let fav = favs.includes(p.nome) ? "❤️" : "🤍";
     let precoHTML = p.promo && p.precoPromo 
@@ -239,25 +247,18 @@ function copiar(){
 
 function mbway(){ alert("Pagar para: 938655760\nEnvie o comprovativo pelo WhatsApp. 😊"); }
 
-// --- LOGICA DO MODAL COM CONTROLO DE HISTORICO ---
 function abrirImg(src){ 
   document.getElementById('modal').style.display="flex"; 
   document.getElementById('imgGrande').src=src;
-  // Cria um estado no histórico para que o botão "Voltar" funcione
   history.pushState({ modalAberto: true }, ""); 
 }
 
 function fecharModal(){ 
   document.getElementById('modal').style.display="none"; 
-  // Se fechamos manualmente clicando na imagem, removemos o estado do histórico para não acumular
-  if(history.state && history.state.modalAberto){
-    history.back();
-  }
+  if(history.state && history.state.modalAberto) history.back();
 }
 
-// Escuta o botão "Voltar" do telemóvel/navegador
 window.addEventListener('popstate', function(event) {
-  // Quando o utilizador clica em voltar, escondemos o modal sem sair do site
   document.getElementById('modal').style.display="none";
 });
 
