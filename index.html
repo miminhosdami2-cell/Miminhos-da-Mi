@@ -127,13 +127,13 @@ function guardar(){ localStorage.setItem("cart", JSON.stringify(cart)); }
 function carregarProdutos(data){
   db = data.map(p=>({
     ...p,
-    id: parseInt(p.id),
+    id: p.id ? parseInt(p.id) : null,
     preco: parseFloat(p.preco),
     precoPromo: p.precoPromo ? parseFloat(p.precoPromo) : null,
     promo: p.promo === "sim",
     categoria: p.categoria || "Outros",
     significado: p.significado || "" 
-  }));
+  })).filter(p => p.id !== null && !isNaN(p.id)); // Filtra: Se não tiver ID numérico, não entra na DB
   
   let categoriasBase = [...new Set(db.map(p=>p.categoria))];
   let temPromos = db.some(p => p.promo);
@@ -155,7 +155,6 @@ function mudar(c,el){
   categoriaAtual = c; 
   paginaAtual = 1; 
   localStorage.setItem("ultimaCat", c); 
-  // Ao mudar de aba, limpamos a pesquisa para não confundir o utilizador
   document.getElementById('pesquisa').value = "";
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); 
   el.classList.add('active'); 
@@ -166,15 +165,17 @@ function irParaPagina(num){ paginaAtual=num; renderProdutos(); window.scrollTo({
 
 function renderProdutos(){
   let termo = document.getElementById('pesquisa').value.toLowerCase();
+  
   let lista = db.filter(p => {
+    // Critério de pesquisa (nome ou ID)
     let matchesTermo = p.nome.toLowerCase().includes(termo) || p.id.toString().includes(termo);
     
-    // Se houver pesquisa, ignora a categoria e procura em tudo
+    // Se estiver a pesquisar algo, mostra resultados de todas as abas
     if(termo.length > 0) return matchesTermo;
     
-    // Se não houver pesquisa, filtra por categoria normal
-    if(categoriaAtual === "🔥 Promoções") return p.promo && matchesTermo;
-    return p.categoria === categoriaAtual && matchesTermo;
+    // Se não estiver a pesquisar, respeita a aba/categoria
+    if(categoriaAtual === "🔥 Promoções") return p.promo;
+    return p.categoria === categoriaAtual;
   });
 
   let totalPaginas = Math.ceil(lista.length / itensPorPagina);
@@ -295,4 +296,5 @@ window.addEventListener('popstate', function(event) {
 
 </script>
 </body>
-</html>
+    </html>
+    p
