@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
@@ -68,7 +68,7 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
   <div class="titulo">Miminhos da Mi ✨</div>
 </h1>
 
-<input class="search" id="pesquisa" placeholder="🔍 Procurar..." oninput="irParaPagina(1)">
+<input class="search" id="pesquisa" placeholder="🔍 Procurar em toda a loja..." oninput="irParaPagina(1)">
 <div class="tabs" id="tabs"></div>
 <div id="loja"></div>
 <div class="paginacao" id="paginacao"></div>
@@ -93,12 +93,10 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
   <button onclick="limparCarrinho()" class="btn-w" style="background:#dc2626;">❌ Anular Pedido</button>
 </div>
 
-<!-- MODAL IMAGEM -->
 <div class="modal" id="modalImg" onclick="fecharModal()">
   <img id="imgGrande">
 </div>
 
-<!-- MODAL SIGNIFICADO -->
 <div class="modal" id="modalTexto" onclick="fecharModal()">
   <div class="modal-texto" onclick="event.stopPropagation()">
     <h3 id="tituloPedra"></h3>
@@ -134,7 +132,7 @@ function carregarProdutos(data){
     precoPromo: p.precoPromo ? parseFloat(p.precoPromo) : null,
     promo: p.promo === "sim",
     categoria: p.categoria || "Outros",
-    significado: p.significado || "" // Nova coluna!
+    significado: p.significado || "" 
   }));
   
   let categoriasBase = [...new Set(db.map(p=>p.categoria))];
@@ -157,6 +155,8 @@ function mudar(c,el){
   categoriaAtual = c; 
   paginaAtual = 1; 
   localStorage.setItem("ultimaCat", c); 
+  // Ao mudar de aba, limpamos a pesquisa para não confundir o utilizador
+  document.getElementById('pesquisa').value = "";
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); 
   el.classList.add('active'); 
   renderProdutos(); 
@@ -167,7 +167,12 @@ function irParaPagina(num){ paginaAtual=num; renderProdutos(); window.scrollTo({
 function renderProdutos(){
   let termo = document.getElementById('pesquisa').value.toLowerCase();
   let lista = db.filter(p => {
-    let matchesTermo = p.nome.toLowerCase().includes(termo);
+    let matchesTermo = p.nome.toLowerCase().includes(termo) || p.id.toString().includes(termo);
+    
+    // Se houver pesquisa, ignora a categoria e procura em tudo
+    if(termo.length > 0) return matchesTermo;
+    
+    // Se não houver pesquisa, filtra por categoria normal
     if(categoriaAtual === "🔥 Promoções") return p.promo && matchesTermo;
     return p.categoria === categoriaAtual && matchesTermo;
   });
@@ -263,7 +268,6 @@ function copiar(){
 
 function mbway(){ alert("Pagar para: 938655760\nEnvie o comprovativo pelo WhatsApp. 😊"); }
 
-// --- LOGICA DE MODAIS ---
 function abrirImg(src){ 
   document.getElementById('modalImg').style.display="flex"; 
   document.getElementById('imgGrande').src=src;
