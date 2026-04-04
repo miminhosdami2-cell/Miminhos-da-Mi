@@ -47,19 +47,18 @@ h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:norm
 
 .card { background:white; border-radius:15px; margin-bottom:20px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,0.08); }
 
-/* APRESENTAÇÃO DA FOTO NO CARD */
 .img-container { 
   width: 100%; 
-  height: 280px; /* Aumentado ligeiramente para destacar o produto */
+  height: 280px; 
   overflow: hidden; 
   position: relative;
-  background: #f9f9f9; /* Fundo neutro caso a imagem demore a carregar */
+  background: #f9f9f9; 
 }
 .img-p { 
   width: 100%; 
   height: 100%; 
-  object-fit: cover; /* Crucial: Preenche o espaço sem deformar */
-  object-position: center 40%; /* Ajuste fino: foca um pouco acima do meio, onde os produtos costumam estar */
+  object-fit: cover; 
+  object-position: center 40%; 
   cursor: pointer; 
   display: block;
 }
@@ -160,8 +159,18 @@ const itensPorPagina = 10;
 
 function guardar(){ localStorage.setItem("cart", JSON.stringify(cart)); }
 
+// FUNÇÃO PARA BARALHAR (Fisher-Yates Shuffle)
+function baralhar(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
 function carregarProdutos(data){
-  db = data.map(p=>({
+  // Processar e filtrar itens sem ID (Stock)
+  let produtosBrutos = data.map(p=>({
     ...p,
     id: p.id ? parseInt(p.id) : null,
     preco: parseFloat(p.preco),
@@ -170,6 +179,9 @@ function carregarProdutos(data){
     categoria: p.categoria || "Outros",
     significado: p.significado || "" 
   })).filter(p => p.id !== null && !isNaN(p.id));
+
+  // APLICAR O RANDOM (BARALHAR)
+  db = baralhar(produtosBrutos);
   
   let categoriasBase = [...new Set(db.map(p=>p.categoria))];
   let temPromos = db.some(p => p.promo);
