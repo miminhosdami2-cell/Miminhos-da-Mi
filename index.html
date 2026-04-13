@@ -28,7 +28,6 @@ h1 .logo { max-width:150px; width:100%; height:auto; border-radius:15px; display
 h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:normal; font-family:'Great Vibes', cursive; }
 .search { width:100%; padding:10px; border-radius:10px; border:1px solid #ddd; margin-bottom:10px; }
 
-/* ESTILO DAS ABAS COM INDICADOR DE SCROLL */
 .tabs-container { position: relative; margin-bottom: 15px; }
 .tabs-container::after { 
   content: ''; position: absolute; top: 0; right: 0; width: 40px; height: 100%; 
@@ -39,7 +38,6 @@ h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:norm
 .tab { padding:8px 16px; background:#eee; border-radius:12px; cursor:pointer; white-space: nowrap; transition: 0.3s; font-size: 14px; }
 .tab.active { background:var(--rosa); color:white; font-weight: bold; transform: scale(1.05); }
 
-/* Animação inicial para as abas */
 @keyframes bounceTabs {
   0%, 20%, 50%, 80%, 100% {transform: translateX(0);}
   40% {transform: translateX(-15px);}
@@ -129,7 +127,6 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
 window.addEventListener("load", () => {
   setTimeout(() => { 
     document.getElementById("splash").style.display = "none";
-    // Pequena animação de "espreitadela" nas abas após o splash
     const tabsEl = document.getElementById("tabs");
     tabsEl.classList.add("tabs-anim");
     setTimeout(() => tabsEl.classList.remove("tabs-anim"), 1500);
@@ -148,10 +145,20 @@ let categoriaAtual = localStorage.getItem("ultimaCat") || "";
 let paginaAtual = 1;
 const itensPorPagina = 10;
 
+// FUNÇÃO PARA BARALHAR (Adicionada)
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
 function guardar(){ localStorage.setItem("cart", JSON.stringify(cart)); }
 
 function carregarProdutos(data){
-  db = data.map(p=>({
+  // Baralha a base de dados original para os itens aparecerem misturados dentro das categorias
+  db = shuffle(data.map(p=>({
     ...p,
     id: p.id ? parseInt(p.id) : null,
     preco: parseFloat(p.preco),
@@ -159,12 +166,16 @@ function carregarProdutos(data){
     promo: p.promo === "sim",
     categoria: p.categoria || "Outros",
     significado: p.significado || "" 
-  })).filter(p => p.id !== null && !isNaN(p.id));
+  }))).filter(p => p.id !== null && !isNaN(p.id));
   
   let categoriasBase = [...new Set(db.map(p=>p.categoria))];
+  // Baralha as categorias para a aba inicial mudar
+  categoriasBase = shuffle(categoriasBase);
+
   let temPromos = db.some(p => p.promo);
   let categoriasFinal = temPromos ? ["🔥 Promoções", ...categoriasBase] : categoriasBase;
   
+  // Se não houver categoria gravada, escolhe a primeira (que agora é aleatória)
   if(!categoriaAtual || !categoriasFinal.includes(categoriaAtual)) categoriaAtual = categoriasFinal[0];
 
   document.getElementById('tabs').innerHTML =
@@ -184,10 +195,7 @@ function mudar(c,el){
   document.getElementById('pesquisa').value = "";
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); 
   el.classList.add('active'); 
-  
-  // Faz scroll automático para a aba ficar visível ao clicar
   el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-  
   renderProdutos(); 
 }
 
@@ -317,7 +325,6 @@ window.addEventListener('popstate', function(event) {
   document.getElementById('modalImg').style.display="none";
   document.getElementById('modalTexto').style.display="none";
 });
-
 </script>
 </body>
 </html>
