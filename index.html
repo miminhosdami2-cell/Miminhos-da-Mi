@@ -28,7 +28,7 @@ h1 .logo { max-width:150px; width:100%; height:auto; border-radius:15px; display
 h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:normal; font-family:'Great Vibes', cursive; }
 .search { width:100%; padding:10px; border-radius:10px; border:1px solid #ddd; margin-bottom:10px; }
 
-.tabs-container { position: relative; margin-bottom: 15px; min-height: 45px; }
+.tabs-container { position: relative; margin-bottom: 15px; }
 .tabs-container::after { 
   content: ''; position: absolute; top: 0; right: 0; width: 40px; height: 100%; 
   background: linear-gradient(to right, transparent, var(--fundo)); pointer-events: none; 
@@ -64,7 +64,7 @@ h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:norm
 }
 
 .info { padding:15px; text-align:center; }
-.nome-clicavel { cursor:pointer; color:var(--rosa); text-decoration:underline; margin:0 0 10px 0; font-size: 18px; }
+.nome-clicavel { cursor:pointer; color:var(--rosa); text-decoration:underline; margin:0 0 10px 0; }
 .btn-add { background:var(--rosa); color:white; border:none; padding:12px; width:100%; border-radius:10px; cursor:pointer; font-weight: bold; }
 .card-wrap { position:relative; }
 .badge { position:absolute; left:10px; top:10px; background:red; color:white; padding:5px 10px; border-radius:8px; font-size:12px; font-weight:bold; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
@@ -105,7 +105,7 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
   <div class="tabs" id="tabs"></div>
 </div>
 
-<div id="loja"><p style="text-align:center;">A carregar miminhos...</p></div>
+<div id="loja"></div>
 <div class="paginacao" id="paginacao"></div>
 
 <div class="carrinho">
@@ -143,6 +143,9 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
 window.addEventListener("load", () => {
   setTimeout(() => { 
     document.getElementById("splash").style.display = "none";
+    const tabsEl = document.getElementById("tabs");
+    tabsEl.classList.add("tabs-anim");
+    setTimeout(() => tabsEl.classList.remove("tabs-anim"), 1500);
   }, 2000);
 });
 
@@ -156,6 +159,7 @@ const itensPorPagina = 10;
 
 function guardar(){ localStorage.setItem("cart", JSON.stringify(cart)); }
 
+// FUNÇÃO PARA BARALHAR (Fisher-Yates Shuffle)
 function baralhar(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -165,48 +169,34 @@ function baralhar(array) {
 }
 
 function carregarProdutos(data){
-  if(!data || data.length === 0) {
-    document.getElementById('loja').innerHTML = "<p style='text-align:center;'>Erro ao carregar dados.</p>";
-    return;
-  }
-
-  // CORREÇÃO: Removi o filtro rígido de ID para evitar que a loja fique em branco se houver erro nos dados
-  db = baralhar(data.map(p=>({
+  let produtosBrutos = data.map(p=>({
     ...p,
-    id: p.id || "0",
-    preco: parseFloat(p.preco) || 0,
+    id: p.id ? parseInt(p.id) : null,
+    preco: parseFloat(p.preco),
     precoPromo: p.precoPromo ? parseFloat(p.precoPromo) : null,
     promo: p.promo === "sim",
     categoria: p.categoria || "Outros",
     significado: p.significado || "" 
-  })));
+  })).filter(p => p.id !== null && !isNaN(p.id));
+
+  // APLICAR O RANDOM (BARALHAR)
+  db = baralhar(produtosBrutos);
   
   let categoriasBase = [...new Set(db.map(p=>p.categoria))];
   let temPromos = db.some(p => p.promo);
   let categoriasFinal = temPromos ? ["🔥 Promoções", ...categoriasBase] : categoriasBase;
   
-  if(!categoriaAtual || !categoriasFinal.includes(categoriaAtual)) {
-      categoriaAtual = categoriasFinal[0];
-  }
+  if(!categoriaAtual || !categoriasFinal.includes(categoriaAtual)) categoriaAtual = categoriasFinal[0];
 
   document.getElementById('tabs').innerHTML =
     categoriasFinal.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
   
-  const tabsEl = document.getElementById("tabs");
-  tabsEl.classList.add("tabs-anim");
-  setTimeout(() => tabsEl.classList.remove("tabs-anim"), 1500);
-
   renderProdutos();
   atualizar();
 }
 
-fetch(API)
-  .then(r=>r.json())
-  .then(data=> carregarProdutos(data))
-  .catch(err => {
-    console.error(err);
-    document.getElementById('loja').innerHTML = "<p style='text-align:center;'>Erro de ligação. Verifique a internet.</p>";
-  });
+fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); });
+setInterval(()=>{ fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); }); }, 120000);
 
 function mudar(c,el){ 
   categoriaAtual = c; 
@@ -224,7 +214,7 @@ function irParaPagina(num){ paginaAtual=num; renderProdutos(); window.scrollTo({
 function renderProdutos(){
   let termo = document.getElementById('pesquisa').value.toLowerCase();
   let lista = db.filter(p => {
-    let matchesTermo = (p.nome && p.nome.toLowerCase().includes(termo)) || (p.id && p.id.toString().includes(termo));
+    let matchesTermo = p.nome.toLowerCase().includes(termo) || p.id.toString().includes(termo);
     if(termo.length > 0) return matchesTermo;
     if(categoriaAtual === "🔥 Promoções") return p.promo;
     return p.categoria === categoriaAtual;
@@ -241,22 +231,18 @@ function renderProdutos(){
       ? `<p style="text-decoration:line-through;color:#999;font-size:13px;">${p.preco.toFixed(2)}€</p><p style="color:red;font-weight:bold;">${p.precoPromo.toFixed(2)}€ 🔥</p>`
       : `<p style="font-weight:bold;">${p.preco.toFixed(2)}€</p>`;
 
-    // CORREÇÃO: Só mostra a imagem se o link existir e o ID não estiver vazio. 
-    // Caso contrário, o card mantém-se perfeito mas sem a zona da foto.
-    let imagemHTML = (p.img && p.id && p.id !== "0") 
-      ? `<div class="img-container"><img src="${p.img}" class="img-p" onclick="abrirImg('${p.img}')"></div>` 
-      : "";
-
     h+=`<div class="card">
       <div class="card-wrap">
         ${p.promo ? '<div class="badge">PROMO</div>' : ''}
         <span class="fav" onclick="toggleFav('${p.nome}')">${fav}</span>
-        ${imagemHTML}
+        <div class="img-container">
+           <img src="${p.img}" class="img-p" onclick="abrirImg('${p.img}')">
+        </div>
       </div>
       <div class="info">
-        <h3 class="nome-clicavel" onclick="abrirSignificado('${p.nome}', '${p.significado.replace(/'/g, "\\'")}')">${p.nome} ℹ️</h3>
+        <h3 class="nome-clicavel" onclick="abrirSignificado('${p.nome}', '${p.significado.replace(/'/g, "\\'")}')">#${p.id} - ${p.nome} ℹ️</h3>
         ${precoHTML}
-        <button class="btn-add" onclick="add('${p.id}')">Adicionar</button>
+        <button class="btn-add" onclick="add(${p.id})">Adicionar</button>
       </div>
     </div>`;
   });
@@ -280,7 +266,6 @@ function toggleFav(nome){
 
 function add(id){ 
   let produto = db.find(p=>p.id===id); 
-  if(!produto) return;
   let precoFinal = (produto.promo && produto.precoPromo) ? produto.precoPromo : produto.preco; 
   let ex = cart.find(p=>p.id===id); 
   if(ex) ex.qtd++; 
@@ -329,7 +314,6 @@ function copiar(){
 function mbway(){ alert("Pagar para: 938655760\nEnvie o comprovativo pelo WhatsApp. 😊"); }
 
 function abrirImg(src){ 
-  if(!src) return;
   document.getElementById('modalImg').style.display="flex"; 
   document.getElementById('imgGrande').src=src;
   history.pushState({ modalAberto: true }, ""); 
@@ -353,6 +337,4 @@ window.addEventListener('popstate', function(event) {
   document.getElementById('modalImg').style.display="none";
   document.getElementById('modalTexto').style.display="none";
 });
-</script>
-</body>
-</html>
+  
