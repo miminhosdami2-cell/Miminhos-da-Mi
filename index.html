@@ -4,8 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Miminhos da Mi</title>
-<link rel="icon" type="image/png" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
+<link rel="icon" type="image/png" sizes="192x192" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
+<link rel="icon" type="image/png" sizes="512x512" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
+<link rel="apple-touch-icon" sizes="180x180" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
+
+<link rel="manifest" href="manifest.json">
+
+<meta name="theme-color" content="#db2777">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
 <style>
 :root { --rosa:#db2777; --fundo:#fff5f7; }
 body { font-family:sans-serif; max-width:450px; margin:auto; padding:15px; background:var(--fundo); }
@@ -16,27 +27,47 @@ h1 { text-align:center; margin-bottom:10px; }
 h1 .logo { max-width:150px; width:100%; height:auto; border-radius:15px; display:block; margin:0 auto; }
 h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:normal; font-family:'Great Vibes', cursive; }
 .search { width:100%; padding:10px; border-radius:10px; border:1px solid #ddd; margin-bottom:10px; }
+
+/* ESTILO DAS ABAS COM INDICADOR DE SCROLL */
 .tabs-container { position: relative; margin-bottom: 15px; }
+.tabs-container::after { 
+  content: ''; position: absolute; top: 0; right: 0; width: 40px; height: 100%; 
+  background: linear-gradient(to right, transparent, var(--fundo)); pointer-events: none; 
+}
 .tabs { display:flex; gap:8px; overflow-x:auto; padding: 5px 0; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
 .tabs::-webkit-scrollbar { display: none; }
-.tab { padding:8px 16px; background:#eee; border-radius:12px; cursor:pointer; white-space: nowrap; font-size: 14px; }
-.tab.active { background:var(--rosa); color:white; font-weight: bold; }
+.tab { padding:8px 16px; background:#eee; border-radius:12px; cursor:pointer; white-space: nowrap; transition: 0.3s; font-size: 14px; }
+.tab.active { background:var(--rosa); color:white; font-weight: bold; transform: scale(1.05); }
+
+/* Animação inicial para as abas */
+@keyframes bounceTabs {
+  0%, 20%, 50%, 80%, 100% {transform: translateX(0);}
+  40% {transform: translateX(-15px);}
+  60% {transform: translateX(-7px);}
+}
+.tabs-anim { animation: bounceTabs 1.5s ease; }
+
 .card { background:white; border-radius:15px; margin-bottom:20px; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
 .img-p { width:100%; height:220px; object-fit:cover; cursor:pointer; }
 .info { padding:15px; text-align:center; }
-.nome-clicavel { cursor:pointer; color:var(--rosa); text-decoration:underline; margin:0 0 10px 0; font-size: 18px; }
-.btn-add { background:var(--rosa); color:white; border:none; padding:12px; width:100%; border-radius:10px; cursor:pointer; font-weight: bold; }
+.nome-clicavel { cursor:pointer; color:var(--rosa); text-decoration:underline; margin:0 0 10px 0; }
+.btn-add { background:var(--rosa); color:white; border:none; padding:10px; width:100%; border-radius:10px; cursor:pointer; }
 .card-wrap { position:relative; }
-.badge { position:absolute; left:10px; top:10px; background:red; color:white; padding:5px 8px; border-radius:8px; font-size:12px; font-weight:bold; z-index: 10; }
-.fav { position:absolute; right:10px; top:10px; font-size:20px; cursor:pointer; z-index: 10; }
+.badge { position:absolute; left:10px; top:10px; background:red; color:white; padding:5px 8px; border-radius:8px; font-size:12px; font-weight:bold; }
+.fav { position:absolute; right:10px; top:10px; font-size:20px; cursor:pointer; }
 .paginacao { display:flex; justify-content:center; gap:8px; margin:20px 0; flex-wrap:wrap; }
 .btn-pag { padding:8px 12px; border:1px solid #ddd; background:white; border-radius:5px; cursor:pointer; }
 .btn-pag.active { background:var(--rosa); color:white; }
+
 .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:none; justify-content:center; align-items:center; z-index:10000; }
-.modal img { max-width:95%; max-height:85%; border-radius:10px; border: 2px solid white; object-fit: contain; }
-.modal-texto { background:white; padding:25px; border-radius:20px; max-width:85%; text-align:center; }
+.modal img { max-width:95%; max-height:90%; border-radius:10px; border: 2px solid white; }
+.modal-texto { background:white; padding:25px; border-radius:20px; max-width:85%; text-align:center; position:relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+.modal-texto h3 { color:var(--rosa); margin-top:0; font-family:'Great Vibes', cursive; font-size:28px; }
+.modal-texto p { line-height:1.5; color:#444; }
+.btn-fechar { background:var(--rosa); color:white; border:none; padding:8px 20px; border-radius:10px; margin-top:15px; cursor:pointer; }
+
 .carrinho { background:white; padding:15px; border-radius:15px; margin-top:30px; border: 1px solid var(--rosa); }
-.btn-w { background:#25D366; color:white; padding:12px; border:none; width:100%; border-radius:10px; margin-top:8px; cursor:pointer; font-weight: bold; }
+.btn-w { background:#25D366; color:white; padding:12px; border:none; width:100%; border-radius:10px; margin-top:8px; cursor:pointer; }
 .item-cart { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
 input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid #ddd; }
 </style>
@@ -54,7 +85,11 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
 </h1>
 
 <input class="search" id="pesquisa" placeholder="🔍 Procurar em toda a loja..." oninput="irParaPagina(1)">
-<div class="tabs-container"><div class="tabs" id="tabs"></div></div>
+
+<div class="tabs-container">
+  <div class="tabs" id="tabs"></div>
+</div>
+
 <div id="loja"></div>
 <div class="paginacao" id="paginacao"></div>
 
@@ -64,104 +99,225 @@ input, select { width:100%; padding:10px; margin-top:5px; border-radius:8px; bor
   <div id="itens-carrinho"></div>
   <p id="total-carrinho"></p>
   <input id="cliente" placeholder="Nome">
+  <input id="telefone" placeholder="Telefone">
   <input id="morada" placeholder="Morada de envio">
-  <select id="envio" onchange="atualizar()"><option>Levantamento</option><option>CTT Normal</option><option>CTT Registado</option></select>
+  <label><strong>📦 Método de envio:</strong></label>
+  <select id="envio" onchange="atualizar()">
+    <option>Levantamento</option>
+    <option>CTT Normal</option>
+    <option>CTT Registado</option>
+  </select>
   <button onclick="finalizar()" class="btn-w">WhatsApp</button>
+  <button onclick="copiar()" class="btn-w" style="background:#111;">Copiar Pedido</button>
+  <button onclick="mbway()" class="btn-w" style="background:#555;">Pagar MBWay</button>
   <button onclick="limparCarrinho()" class="btn-w" style="background:#dc2626;">❌ Anular Pedido</button>
 </div>
 
-<div class="modal" id="modalImg" onclick="fecharModal()"><img id="imgGrande"></div>
-<div class="modal" id="modalTexto" onclick="fecharModal()"><div class="modal-texto" onclick="event.stopPropagation()"><h3 id="tituloPedra"></h3><p id="corpoSignificado"></p><button class="btn-fechar" onclick="fecharModal()">Fechar</button></div></div>
+<div class="modal" id="modalImg" onclick="fecharModal()">
+  <img id="imgGrande">
+</div>
+
+<div class="modal" id="modalTexto" onclick="fecharModal()">
+  <div class="modal-texto" onclick="event.stopPropagation()">
+    <h3 id="tituloPedra"></h3>
+    <p id="corpoSignificado"></p>
+    <button class="btn-fechar" onclick="fecharModal()">Fechar</button>
+  </div>
+</div>
 
 <script>
-// Segurança: Se os dados demorarem muito, o splash sai de qualquer maneira após 4 segundos
-setTimeout(() => { document.getElementById("splash").style.display = "none"; }, 4000);
+window.addEventListener("load", () => {
+  setTimeout(() => { 
+    document.getElementById("splash").style.display = "none";
+    // Pequena animação de "espreitadela" nas abas após o splash
+    const tabsEl = document.getElementById("tabs");
+    tabsEl.classList.add("tabs-anim");
+    setTimeout(() => tabsEl.classList.remove("tabs-anim"), 1500);
+  }, 2000);
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); });
+}
 
 const API = 'https://script.google.com/macros/s/AKfycbw7iXZ525CvJqAHfBR23OsiarAxrjFU_vaHA75JA7G2hjy9Xany3bvKNdkpNQP7Jch3/exec'; 
-let db = [], cart = JSON.parse(localStorage.getItem("cart")) || [], favs = JSON.parse(localStorage.getItem("favs")) || [];
-let categoriaAtual = localStorage.getItem("ultimaCat") || "", paginaAtual = 1;
+let db = [];
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let favs = JSON.parse(localStorage.getItem("favs")) || [];
+let categoriaAtual = localStorage.getItem("ultimaCat") || ""; 
+let paginaAtual = 1;
+const itensPorPagina = 10;
+
+function guardar(){ localStorage.setItem("cart", JSON.stringify(cart)); }
 
 function carregarProdutos(data){
   db = data.map(p=>({
-    ...p, id: p.id ? parseInt(p.id) : null, preco: parseFloat(p.preco),
-    promo: p.promo === "sim", categoria: p.categoria || "Outros", significado: p.significado || "" 
-  })).filter(p => p.id !== null);
+    ...p,
+    id: p.id ? parseInt(p.id) : null,
+    preco: parseFloat(p.preco),
+    precoPromo: p.precoPromo ? parseFloat(p.precoPromo) : null,
+    promo: p.promo === "sim",
+    categoria: p.categoria || "Outros",
+    significado: p.significado || "" 
+  })).filter(p => p.id !== null && !isNaN(p.id));
+  
+  let categoriasBase = [...new Set(db.map(p=>p.categoria))];
+  let temPromos = db.some(p => p.promo);
+  let categoriasFinal = temPromos ? ["🔥 Promoções", ...categoriasBase] : categoriasBase;
+  
+  if(!categoriaAtual || !categoriasFinal.includes(categoriaAtual)) categoriaAtual = categoriasFinal[0];
 
-  let cats = [...new Set(db.map(p=>p.categoria))];
-  if(db.some(p=>p.promo)) cats = ["🔥 Promoções", ...cats];
-  if(!categoriaAtual || !cats.includes(categoriaAtual)) categoriaAtual = cats[0];
-
-  document.getElementById('tabs').innerHTML = cats.map(c=>`<div class="tab ${c===categoriaAtual?'active':''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
-  document.getElementById("splash").style.display = "none"; 
-  renderProdutos(); atualizar();
+  document.getElementById('tabs').innerHTML =
+    categoriasFinal.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
+  
+  renderProdutos();
+  atualizar();
 }
 
-fetch(API).then(r=>r.json()).then(data=>carregarProdutos(data)).catch(()=>document.getElementById("loja").innerHTML="Erro na ligação.");
+fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); });
+setInterval(()=>{ fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); }); }, 120000);
 
 function mudar(c,el){ 
-  categoriaAtual = c; paginaAtual = 1;
-  localStorage.setItem("ultimaCat", c);
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
+  categoriaAtual = c; 
+  paginaAtual = 1; 
+  localStorage.setItem("ultimaCat", c); 
+  document.getElementById('pesquisa').value = "";
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); 
+  el.classList.add('active'); 
+  
+  // Faz scroll automático para a aba ficar visível ao clicar
+  el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  
   renderProdutos(); 
 }
 
-function irParaPagina(n){ paginaAtual=n; renderProdutos(); window.scrollTo(0,0); }
+function irParaPagina(num){ paginaAtual=num; renderProdutos(); window.scrollTo({top:0,behavior:'smooth'}); }
 
 function renderProdutos(){
-  let t = document.getElementById('pesquisa').value.toLowerCase();
+  let termo = document.getElementById('pesquisa').value.toLowerCase();
   let lista = db.filter(p => {
-    if(t) return p.nome.toLowerCase().includes(t) || p.id.toString().includes(t);
-    return categoriaAtual === "🔥 Promoções" ? p.promo : p.categoria === categoriaAtual;
+    let matchesTermo = p.nome.toLowerCase().includes(termo) || p.id.toString().includes(termo);
+    if(termo.length > 0) return matchesTermo;
+    if(categoriaAtual === "🔥 Promoções") return p.promo;
+    return p.categoria === categoriaAtual;
   });
-  let itens = lista.slice((paginaAtual-1)*10, paginaAtual*10);
-  let h = itens.map(p => `
-    <div class="card">
+
+  let totalPaginas = Math.ceil(lista.length / itensPorPagina);
+  let inicio = (paginaAtual - 1) * itensPorPagina;
+  let itens = lista.slice(inicio, inicio + itensPorPagina);
+  let h="";
+  
+  itens.forEach(p=>{
+    let fav = favs.includes(p.nome) ? "❤️" : "🤍";
+    let precoHTML = p.promo && p.precoPromo 
+      ? `<p style="text-decoration:line-through;color:#999;font-size:13px;">${p.preco.toFixed(2)}€</p><p style="color:red;font-weight:bold;">${p.precoPromo.toFixed(2)}€ 🔥</p>`
+      : `<p style="font-weight:bold;">${p.preco.toFixed(2)}€</p>`;
+
+    h+=`<div class="card">
       <div class="card-wrap">
-        ${p.promo?'<div class="badge">PROMO</div>':''}
-        <span class="fav" onclick="toggleFav('${p.nome}')">${favs.includes(p.nome)?'❤️':'🤍'}</span>
+        ${p.promo ? '<div class="badge">PROMO</div>' : ''}
+        <span class="fav" onclick="toggleFav('${p.nome}')">${fav}</span>
         <img src="${p.img}" class="img-p" onclick="abrirImg('${p.img}')">
       </div>
       <div class="info">
-        <h3 class="nome-clicavel" onclick="abrirSignificado('${p.nome}','${p.significado.replace(/'/g,"")}')">#${p.id} - ${p.nome} ℹ️</h3>
-        <p><b>${p.preco.toFixed(2)}€</b></p>
+        <h3 class="nome-clicavel" onclick="abrirSignificado('${p.nome}', '${p.significado.replace(/'/g, "\\'")}')">#${p.id} - ${p.nome} ℹ️</h3>
+        ${precoHTML}
         <button class="btn-add" onclick="add(${p.id})">Adicionar</button>
       </div>
-    </div>`).join("");
-  document.getElementById('loja').innerHTML = h || "Sem itens.";
-  renderPag(lista.length);
+    </div>`;
+  });
+  document.getElementById('loja').innerHTML = h || "<p style='text-align:center;'>Nenhum item encontrado.</p>";
+  renderPaginacao(totalPaginas);
 }
 
-function renderPag(total){
-  let pags = Math.ceil(total/10); let h = "";
-  if(pags > 1) for(let i=1;i<=pags;i++) h += `<button class="btn-pag ${i===paginaAtual?'active':''}" onclick="irParaPagina(${i})">${i}</button>`;
-  document.getElementById('paginacao').innerHTML = h;
+function renderPaginacao(total){ 
+  let h=""; 
+  if(total <= 1) { document.getElementById('paginacao').innerHTML = ""; return; }
+  for(let i=1;i<=total;i++){ h+=`<button class="btn-pag ${i===paginaAtual?'active':''}" onclick="irParaPagina(${i})">${i}</button>`; } 
+  document.getElementById('paginacao').innerHTML = h; 
 }
 
-function toggleFav(n){ favs=favs.includes(n)?favs.filter(f=>f!==n):[...favs,n]; localStorage.setItem("favs",JSON.stringify(favs)); renderProdutos(); }
-function add(id){ let p=db.find(x=>x.id===id); let ex=cart.find(x=>x.id===id); if(ex) ex.qtd++; else cart.push({...p,qtd:1}); atualizar(); }
-function limparCarrinho(){ cart=[]; atualizar(); }
+function toggleFav(nome){ 
+  if(favs.includes(nome)) favs = favs.filter(f=>f!==nome); 
+  else favs.push(nome); 
+  localStorage.setItem("favs", JSON.stringify(favs)); 
+  renderProdutos(); 
+}
+
+function add(id){ 
+  let produto = db.find(p=>p.id===id); 
+  let precoFinal = (produto.promo && produto.precoPromo) ? produto.precoPromo : produto.preco; 
+  let ex = cart.find(p=>p.id===id); 
+  if(ex) ex.qtd++; 
+  else cart.push({...produto, preco:precoFinal, qtd:1}); 
+  guardar(); 
+  atualizar(); 
+}
+
+function mais(i){ cart[i].qtd++; guardar(); atualizar(); }
+function menos(i){ cart[i].qtd--; if(cart[i].qtd<=0) cart.splice(i,1); guardar(); atualizar(); }
+function limparCarrinho(){ if(confirm("Anular pedido?")){ cart=[]; guardar(); atualizar(); } }
 
 function atualizar(){
-  localStorage.setItem("cart", JSON.stringify(cart));
-  let total = cart.reduce((acc,p)=>acc+(p.qtd*p.preco),0);
-  document.getElementById('itens-carrinho').innerHTML = cart.map((p,i)=>`
-    <div class="item-cart"><span>#${p.id} - ${p.nome} (x${p.qtd})</span>
-    <div><button onclick="cart[${i}].qtd--;if(cart[${i}].qtd<=0)cart.splice(${i},1);atualizar()">-</button>
-    <button onclick="cart[${i}].qtd++;atualizar()">+</button></div></div>`).join("");
-  document.getElementById('total-carrinho').innerHTML = `Total: ${total.toFixed(2)}€`;
+  let total=0; let h="";
+  cart.forEach((p,i)=>{ 
+    total += (p.qtd * p.preco); 
+    h+=`<div class="item-cart"><span>#${p.id} - ${p.nome} (x${p.qtd})</span><div><button onclick="menos(${i})">➖</button><button onclick="mais(${i})">➕</button></div></div>`; 
+  });
+  document.getElementById('itens-carrinho').innerHTML = h || "<p>O carrinho está vazio.</p>";
+  let envio = document.getElementById('envio').value;
+  document.getElementById('total-carrinho').innerHTML = `<strong>Total: ${total.toFixed(2)}€</strong><br><small>Envio: ${envio}</small>`;
 }
 
 function finalizar(){
   let n = document.getElementById('cliente').value;
-  if(!n || !cart.length) return alert("Carrinho vazio ou falta o nome!");
-  let msg = `*Pedido Miminhos da Mi*\n*Cliente:* ${n}\n\n*Itens:*\n` + cart.map(p=>`• #${p.id} - ${p.nome} (x${p.qtd})`).join("\n");
+  let t = document.getElementById('telefone').value;
+  let m = document.getElementById('morada').value;
+  let envio = document.getElementById('envio').value;
+  if(cart.length === 0) return alert("Carrinho vazio!");
+  if(!n) return alert("Indique o seu nome.");
+  let total = cart.reduce((acc,p)=>acc + (p.qtd * p.preco),0);
+  let msg = `*Pedido Miminhos da Mi*\n*Cliente:* ${n}\n*Tel:* ${t}\n*Envio:* ${envio}\n*Morada:* ${m}\n\n*Itens:*\n`;
+  cart.forEach(p=>{ msg += `• #${p.id} - ${p.nome} (x${p.qtd}) - ${(p.qtd*p.preco).toFixed(2)}€\n`; });
+  msg += `\n*TOTAL: ${total.toFixed(2)}€*`;
   window.open(`https://wa.me/351938655760?text=${encodeURIComponent(msg)}`);
 }
 
-function abrirImg(s){ document.getElementById('imgGrande').src=s; document.getElementById('modalImg').style.display='flex'; }
-function abrirSignificado(n,t){ document.getElementById('tituloPedra').innerText=n; document.getElementById('corpoSignificado').innerText=t||"Em breve..."; document.getElementById('modalTexto').style.display='flex'; }
-function fecharModal(){ document.getElementById('modalImg').style.display='none'; document.getElementById('modalTexto').style.display='none'; }
+function copiar(){ 
+  let n = document.getElementById('cliente').value || "Cliente";
+  let total = cart.reduce((acc,p)=>acc + (p.qtd * p.preco),0);
+  let msg = `Pedido Miminhos da Mi - ${n} - Total: ${total.toFixed(2)}€`;
+  navigator.clipboard.writeText(msg); 
+  alert("Resumo copiado!"); 
+}
+
+function mbway(){ alert("Pagar para: 938655760\nEnvie o comprovativo pelo WhatsApp. 😊"); }
+
+function abrirImg(src){ 
+  document.getElementById('modalImg').style.display="flex"; 
+  document.getElementById('imgGrande').src=src;
+  history.pushState({ modalAberto: true }, ""); 
+}
+
+function abrirSignificado(nome, texto){
+  if(!texto || texto === "") texto = "O significado desta pedra será adicionado em breve! ✨";
+  document.getElementById('tituloPedra').innerText = nome;
+  document.getElementById('corpoSignificado').innerText = texto;
+  document.getElementById('modalTexto').style.display="flex";
+  history.pushState({ modalAberto: true }, "");
+}
+
+function fecharModal(){ 
+  document.getElementById('modalImg').style.display="none"; 
+  document.getElementById('modalTexto').style.display="none"; 
+  if(history.state && history.state.modalAberto) history.back();
+}
+
+window.addEventListener('popstate', function(event) {
+  document.getElementById('modalImg').style.display="none";
+  document.getElementById('modalTexto').style.display="none";
+});
+
 </script>
 </body>
 </html>
