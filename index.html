@@ -170,17 +170,16 @@ function carregarProdutos(data){
     return;
   }
 
-  let produtosBrutos = data.map(p=>({
+  // CORREÇÃO: Removi o filtro rígido de ID para evitar que a loja fique em branco se houver erro nos dados
+  db = baralhar(data.map(p=>({
     ...p,
-    id: p.id ? parseInt(p.id) : null,
+    id: p.id || "0",
     preco: parseFloat(p.preco) || 0,
     precoPromo: p.precoPromo ? parseFloat(p.precoPromo) : null,
     promo: p.promo === "sim",
     categoria: p.categoria || "Outros",
     significado: p.significado || "" 
-  })).filter(p => p.id !== null);
-
-  db = baralhar(produtosBrutos);
+  })));
   
   let categoriasBase = [...new Set(db.map(p=>p.categoria))];
   let temPromos = db.some(p => p.promo);
@@ -193,7 +192,6 @@ function carregarProdutos(data){
   document.getElementById('tabs').innerHTML =
     categoriasFinal.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
   
-  // Animação das abas
   const tabsEl = document.getElementById("tabs");
   tabsEl.classList.add("tabs-anim");
   setTimeout(() => tabsEl.classList.remove("tabs-anim"), 1500);
@@ -202,13 +200,12 @@ function carregarProdutos(data){
   atualizar();
 }
 
-// Chamar a API
 fetch(API)
   .then(r=>r.json())
   .then(data=> carregarProdutos(data))
   .catch(err => {
     console.error(err);
-    document.getElementById('loja').innerHTML = "<p style='text-align:center;'>Erro de ligação à base de dados. Verifique a internet.</p>";
+    document.getElementById('loja').innerHTML = "<p style='text-align:center;'>Erro de ligação. Verifique a internet.</p>";
   });
 
 function mudar(c,el){ 
@@ -244,18 +241,22 @@ function renderProdutos(){
       ? `<p style="text-decoration:line-through;color:#999;font-size:13px;">${p.preco.toFixed(2)}€</p><p style="color:red;font-weight:bold;">${p.precoPromo.toFixed(2)}€ 🔥</p>`
       : `<p style="font-weight:bold;">${p.preco.toFixed(2)}€</p>`;
 
+    // CORREÇÃO: Só mostra a imagem se o link existir e o ID não estiver vazio. 
+    // Caso contrário, o card mantém-se perfeito mas sem a zona da foto.
+    let imagemHTML = (p.img && p.id && p.id !== "0") 
+      ? `<div class="img-container"><img src="${p.img}" class="img-p" onclick="abrirImg('${p.img}')"></div>` 
+      : "";
+
     h+=`<div class="card">
       <div class="card-wrap">
         ${p.promo ? '<div class="badge">PROMO</div>' : ''}
         <span class="fav" onclick="toggleFav('${p.nome}')">${fav}</span>
-        <div class="img-container">
-           <img src="${p.img}" class="img-p" onclick="abrirImg('${p.img}')">
-        </div>
+        ${imagemHTML}
       </div>
       <div class="info">
         <h3 class="nome-clicavel" onclick="abrirSignificado('${p.nome}', '${p.significado.replace(/'/g, "\\'")}')">${p.nome} ℹ️</h3>
         ${precoHTML}
-        <button class="btn-add" onclick="add(${p.id})">Adicionar</button>
+        <button class="btn-add" onclick="add('${p.id}')">Adicionar</button>
       </div>
     </div>`;
   });
@@ -279,6 +280,7 @@ function toggleFav(nome){
 
 function add(id){ 
   let produto = db.find(p=>p.id===id); 
+  if(!produto) return;
   let precoFinal = (produto.promo && produto.precoPromo) ? produto.precoPromo : produto.preco; 
   let ex = cart.find(p=>p.id===id); 
   if(ex) ex.qtd++; 
@@ -327,6 +329,7 @@ function copiar(){
 function mbway(){ alert("Pagar para: 938655760\nEnvie o comprovativo pelo WhatsApp. 😊"); }
 
 function abrirImg(src){ 
+  if(!src) return;
   document.getElementById('modalImg').style.display="flex"; 
   document.getElementById('imgGrande').src=src;
   history.pushState({ modalAberto: true }, ""); 
