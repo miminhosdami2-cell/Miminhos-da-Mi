@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="0ba238ea-b8cf-4ee7-b94d-218e2acea63f"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Miminhos da Mi</title>
@@ -145,7 +146,6 @@ let categoriaAtual = localStorage.getItem("ultimaCat") || "";
 let paginaAtual = 1;
 const itensPorPagina = 10;
 
-// FUNÇÃO PARA BARALHAR (Adicionada)
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -157,7 +157,6 @@ function shuffle(array) {
 function guardar(){ localStorage.setItem("cart", JSON.stringify(cart)); }
 
 function carregarProdutos(data){
-  // Baralha a base de dados original para os itens aparecerem misturados dentro das categorias
   db = shuffle(data.map(p=>({
     ...p,
     id: p.id ? parseInt(p.id) : null,
@@ -169,18 +168,12 @@ function carregarProdutos(data){
   }))).filter(p => p.id !== null && !isNaN(p.id));
   
   let categoriasBase = [...new Set(db.map(p=>p.categoria))];
-  // Baralha as categorias para a aba inicial mudar
   categoriasBase = shuffle(categoriasBase);
-
   let temPromos = db.some(p => p.promo);
   let categoriasFinal = temPromos ? ["🔥 Promoções", ...categoriasBase] : categoriasBase;
-  
-  // Se não houver categoria gravada, escolhe a primeira (que agora é aleatória)
   if(!categoriaAtual || !categoriasFinal.includes(categoriaAtual)) categoriaAtual = categoriasFinal[0];
-
   document.getElementById('tabs').innerHTML =
     categoriasFinal.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
-  
   renderProdutos();
   atualizar();
 }
@@ -209,18 +202,15 @@ function renderProdutos(){
     if(categoriaAtual === "🔥 Promoções") return p.promo;
     return p.categoria === categoriaAtual;
   });
-
   let totalPaginas = Math.ceil(lista.length / itensPorPagina);
   let inicio = (paginaAtual - 1) * itensPorPagina;
   let itens = lista.slice(inicio, inicio + itensPorPagina);
   let h="";
-  
   itens.forEach(p=>{
     let fav = favs.includes(p.nome) ? "❤️" : "🤍";
     let precoHTML = p.promo && p.precoPromo 
       ? `<p style="text-decoration:line-through;color:#999;font-size:13px;">${p.preco.toFixed(2)}€</p><p style="color:red;font-weight:bold;">${p.precoPromo.toFixed(2)}€ 🔥</p>`
       : `<p style="font-weight:bold;">${p.preco.toFixed(2)}€</p>`;
-
     h+=`<div class="card">
       <div class="card-wrap">
         ${p.promo ? '<div class="badge">PROMO</div>' : ''}
@@ -272,4 +262,59 @@ function atualizar(){
     total += (p.qtd * p.preco); 
     h+=`<div class="item-cart"><span>#${p.id} - ${p.nome} (x${p.qtd})</span><div><button onclick="menos(${i})">➖</button><button onclick="mais(${i})">➕</button></div></div>`; 
   });
-  document.getElementById('itens-carrinho').innerHTML = h
+  document.getElementById('itens-carrinho').innerHTML = h || "<p>O carrinho está vazio.</p>";
+  let envio = document.getElementById('envio').value;
+  document.getElementById('total-carrinho').innerHTML = `<strong>Total: ${total.toFixed(2)}€</strong><br><small>Envio: ${envio}</small>`;
+}
+
+function finalizar(){
+  let n = document.getElementById('cliente').value;
+  let t = document.getElementById('telefone').value;
+  let m = document.getElementById('morada').value;
+  let envio = document.getElementById('envio').value;
+  if(cart.length === 0) return alert("Carrinho vazio!");
+  if(!n) return alert("Indique o seu nome.");
+  let total = cart.reduce((acc,p)=>acc + (p.qtd * p.preco),0);
+  let msg = `*Pedido Miminhos da Mi*\n*Cliente:* ${n}\n*Tel:* ${t}\n*Envio:* ${envio}\n*Morada:* ${m}\n\n*Itens:*\n`;
+  cart.forEach(p=>{ msg += `• #${p.id} - ${p.nome} (x${p.qtd}) - ${(p.qtd*p.preco).toFixed(2)}€\n`; });
+  msg += `\n*TOTAL: ${total.toFixed(2)}€*`;
+  window.open(`https://wa.me/351938655760?text=${encodeURIComponent(msg)}`);
+}
+
+function copiar(){ 
+  let n = document.getElementById('cliente').value || "Cliente";
+  let total = cart.reduce((acc,p)=>acc + (p.qtd * p.preco),0);
+  let msg = `Pedido Miminhos da Mi - ${n} - Total: ${total.toFixed(2)}€`;
+  navigator.clipboard.writeText(msg); 
+  alert("Resumo copiado!"); 
+}
+
+function mbway(){ alert("Pagar para: 938655760\nEnvie o comprovativo pelo WhatsApp. 😊"); }
+
+function abrirImg(src){ 
+  document.getElementById('modalImg').style.display="flex"; 
+  document.getElementById('imgGrande').src=src;
+  history.pushState({ modalAberto: true }, ""); 
+}
+
+function abrirSignificado(nome, texto){
+  if(!texto || texto === "") texto = "O significado desta pedra será adicionado em breve! ✨";
+  document.getElementById('tituloPedra').innerText = nome;
+  document.getElementById('corpoSignificado').innerText = texto;
+  document.getElementById('modalTexto').style.display="flex";
+  history.pushState({ modalAberto: true }, "");
+}
+
+function fecharModal(){ 
+  document.getElementById('modalImg').style.display="none"; 
+  document.getElementById('modalTexto').style.display="none"; 
+  if(history.state && history.state.modalAberto) history.back();
+}
+
+window.addEventListener('popstate', function(event) {
+  document.getElementById('modalImg').style.display="none";
+  document.getElementById('modalTexto').style.display="none";
+});
+</script>
+</body>
+</html>
