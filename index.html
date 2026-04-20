@@ -23,7 +23,6 @@ h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-family:'Gre
 
 .search { width:100%; padding:12px; border-radius:10px; border:1px solid #ddd; margin-bottom:15px; box-sizing: border-box; }
 
-/* Contentor das Abas com scroll suave */
 .tabs-container { position: relative; margin-bottom: 15px; overflow: hidden; }
 .tabs { display:flex; gap:8px; overflow-x:auto; padding: 10px 0; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
 .tabs::-webkit-scrollbar { display: none; }
@@ -40,9 +39,11 @@ h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-family:'Gre
 .nome-clicavel { cursor:pointer; color:var(--rosa); text-decoration:underline; font-size: 18px; margin: 0 0 10px 0; }
 .btn-add { background:var(--rosa); color:white; border:none; padding:12px; width:100%; border-radius:10px; cursor:pointer; font-weight: bold; }
 
+/* Ajuste nos botões de quantidade do carrinho */
 .carrinho { background:white; padding:20px; border-radius:15px; margin-top:30px; border: 2px solid var(--rosa); }
-.item-cart { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-.cart-btns button { background: #eee; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+.item-cart { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+.cart-btns { display: flex; gap: 10px; }
+.cart-btns button { background: #eee; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 18px; }
 
 .btn-w { background:#25D366; color:white; padding:15px; border:none; width:100%; border-radius:10px; margin-top:8px; cursor:pointer; font-weight: bold; font-size: 16px; }
 
@@ -96,6 +97,7 @@ input, select { width:100%; padding:12px; margin-top:8px; border-radius:8px; bor
   </select>
 
   <button onclick="finalizar()" class="btn-w">Finalizar via WhatsApp</button>
+  <button onclick="alert('Pagar para: 938655760\nEnvie o comprovativo pelo WhatsApp. 😊')" class="btn-w" style="background:#555;">Pagar via MBWay</button>
   <button onclick="copiar()" class="btn-w" style="background:#111;">Copiar Resumo</button>
   <button onclick="limparCarrinho()" class="btn-w" style="background:#dc2626; font-size: 12px; padding: 8px;">Anular Pedido</button>
 </div>
@@ -228,8 +230,8 @@ function atualizar() {
       <div class="item-cart">
         <span>#${p.id} ${p.nome} (x${p.qtd})</span>
         <div class="cart-btns">
-          <button onclick="mudarQtd(${i},-1)">-</button>
-          <button onclick="mudarQtd(${i},1)">+</button>
+          <button onclick="mudarQtd(${i},-1)">➖</button>
+          <button onclick="mudarQtd(${i},1)">➕</button>
         </div>
       </div>`;
   }).join("") || "<p style='color:#888'>O teu carrinho está vazio...</p>";
@@ -246,19 +248,13 @@ function mudarQtd(i, n) {
 }
 
 function limparCarrinho() { if(confirm("Anular pedido?")){ cart = []; localStorage.removeItem("cart"); atualizar(); } }
-
 function abrirImg(src) { document.getElementById('modalImg').style.display = 'flex'; document.getElementById('imgGrande').src = src; }
-
 function abrirSignificado(nome, texto) {
   document.getElementById('tituloPedra').innerText = nome;
   document.getElementById('corpoSignificado').innerText = texto || "Significado disponível em breve! ✨";
   document.getElementById('modalTexto').style.display = 'flex';
 }
-
-function fecharModal() { 
-  document.getElementById('modalImg').style.display = 'none'; 
-  document.getElementById('modalTexto').style.display = 'none'; 
-}
+function fecharModal() { document.getElementById('modalImg').style.display = 'none'; document.getElementById('modalTexto').style.display = 'none'; }
 
 function toggleFav(n) {
   if(favs.includes(n)) favs = favs.filter(f => f !== n);
