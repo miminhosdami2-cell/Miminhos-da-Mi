@@ -139,7 +139,7 @@ if ('serviceWorker' in navigator) {
 
 const API = 'https://script.google.com/macros/s/AKfycbw7iXZ525CvJqAHfBR23OsiarAxrjFU_vaHA75JA7G2hjy9Xany3bvKNdkpNQP7Jch3/exec'; 
 let db = [];
-let categoriasAtuais = []; 
+let listaCategorias = []; 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let favs = JSON.parse(localStorage.getItem("favs")) || [];
 let categoriaAtual = localStorage.getItem("ultimaCat") || ""; 
@@ -171,9 +171,9 @@ function carregarProdutos(data){
   categoriasBase = shuffle(categoriasBase);
 
   let temPromos = db.some(p => p.promo);
-  categoriasAtuais = temPromos ? ["🔥 Promoções", ...categoriasBase] : categoriasBase;
+  listaCategorias = temPromos ? ["🔥 Promoções", ...categoriasBase] : categoriasBase;
   
-  if(!categoriaAtual || !categoriasAtuais.includes(categoriaAtual)) categoriaAtual = categoriasAtuais[0];
+  if(!categoriaAtual || !listaCategorias.includes(categoriaAtual)) categoriaAtual = listaCategorias[0];
 
   renderTabs();
   renderProdutos();
@@ -182,7 +182,7 @@ function carregarProdutos(data){
 
 function renderTabs() {
   document.getElementById('tabs').innerHTML =
-    categoriasAtuais.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
+    listaCategorias.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
 }
 
 fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); });
@@ -194,12 +194,11 @@ function mudar(c,el){
   localStorage.setItem("ultimaCat", c); 
   document.getElementById('pesquisa').value = "";
   
-  let outras = categoriasAtuais.filter(cat => cat !== c);
-  categoriasAtuais = [c, ...shuffle(outras)];
+  let outras = listaCategorias.filter(cat => cat !== c);
+  listaCategorias = [c, ...shuffle(outras)];
   
   renderTabs();
   
-  // Lógica para centralizar a aba ativa no centro do container
   setTimeout(() => {
     const container = document.getElementById('tabs');
     const ativa = Array.from(document.querySelectorAll('.tab')).find(t => t.innerText === c);
@@ -207,7 +206,7 @@ function mudar(c,el){
       const scrollPos = ativa.offsetLeft - (container.offsetWidth / 2) + (ativa.offsetWidth / 2);
       container.scrollTo({ left: scrollPos, behavior: 'smooth' });
     }
-  }, 10);
+  }, 50);
   
   renderProdutos(); 
 }
@@ -287,5 +286,34 @@ function atualizar(){
   });
   document.getElementById('itens-carrinho').innerHTML = h || "<p>O carrinho está vazio.</p>";
   let envio = document.getElementById('envio').value;
-  document.getElementById('total-carrinho').innerHTML = `<strong>
+  document.getElementById('total-carrinho').innerHTML = `<strong>Total: ${total.toFixed(2)}€</strong><br><small>Envio: ${envio}</small>`;
+}
+
+function finalizar(){
+  let n = document.getElementById('cliente').value;
+  let t = document.getElementById('telefone').value;
+  let m = document.getElementById('morada').value;
+  let envio = document.getElementById('envio').value;
+  if(cart.length === 0) return alert("Carrinho vazio!");
+  if(!n) return alert("Indique o seu nome.");
+  let total = cart.reduce((acc,p)=>acc + (p.qtd * p.preco),0);
+  let msg = `*Pedido Miminhos da Mi*\n*Cliente:* ${n}\n*Tel:* ${t}\n*Envio:* ${envio}\n*Morada:* ${m}\n\n*Itens:*\n`;
+  cart.forEach(p=>{ msg += `• #${p.id} - ${p.nome} (x${p.qtd}) - ${(p.qtd*p.preco).toFixed(2)}€\n`; });
+  msg += `\n*TOTAL: ${total.toFixed(2)}€*`;
+  window.open(`https://wa.me/351938655760?text=${encodeURIComponent(msg)}`);
+}
+
+function copiar(){ 
+  let n = document.getElementById('cliente').value || "Cliente";
+  let total = cart.reduce((acc,p)=>acc + (p.qtd * p.preco),0);
+  let msg = `Pedido Miminhos da Mi - ${n} - Total: ${total.toFixed(2)}€`;
+  navigator.clipboard.writeText(msg); 
+  alert("Resumo copiado!"); 
+}
+
+function mbway(){ alert("Pagar para: 938655760\nEnvie o comprovativo pelo WhatsApp. 😊"); }
+
+function abrirImg(src){ 
+  document.getElementById('modalImg').style.display="flex"; 
+  document.
   
