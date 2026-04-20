@@ -28,14 +28,20 @@ h1 .logo { max-width:150px; width:100%; height:auto; border-radius:15px; display
 h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-weight:normal; font-family:'Great Vibes', cursive; }
 .search { width:100%; padding:10px; border-radius:10px; border:1px solid #ddd; margin-bottom:10px; }
 
-.tabs-container { position: relative; margin-bottom: 15px; }
-.tabs-container::after { 
-  content: ''; position: absolute; top: 0; right: 0; width: 40px; height: 100%; 
-  background: linear-gradient(to right, transparent, var(--fundo)); pointer-events: none; 
+/* Estrutura de Abas com Centralização */
+.tabs-container { width: 100%; overflow: hidden; margin-bottom: 15px; }
+.tabs { 
+  display: flex; 
+  gap: 8px; 
+  overflow-x: auto; 
+  padding: 10px 50vw; /* Padding dinâmico para permitir centralização total */
+  scroll-behavior: smooth; 
+  -webkit-overflow-scrolling: touch; 
+  margin-left: -50vw; 
+  margin-right: -50vw;
 }
-.tabs { display:flex; gap:8px; overflow-x:auto; padding: 5px 0; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
 .tabs::-webkit-scrollbar { display: none; }
-.tab { padding:8px 16px; background:#eee; border-radius:12px; cursor:pointer; white-space: nowrap; transition: 0.3s; font-size: 14px; }
+.tab { padding:8px 16px; background:#eee; border-radius:12px; cursor:pointer; white-space: nowrap; transition: 0.3s; font-size: 14px; flex-shrink: 0; }
 .tab.active { background:var(--rosa); color:white; font-weight: bold; transform: scale(1.05); }
 
 @keyframes bounceTabs {
@@ -155,19 +161,12 @@ function shuffle(array) {
   return arr;
 }
 
-function centrarAba(texto) {
+// Função de centralização corrigida
+function centrarAbaAtiva() {
   setTimeout(() => {
-    const container = document.getElementById('tabs');
-    const abas = document.querySelectorAll('.tab');
-    let ativa = null;
-    abas.forEach(t => { if(t.innerText === texto) ativa = t; });
-    
-    if (ativa && container) {
-      const offsetAtiva = ativa.offsetLeft;
-      const larguraAtiva = ativa.offsetWidth;
-      const larguraContainer = container.offsetWidth;
-      const scrollFinal = offsetAtiva - (larguraContainer / 2) + (larguraAtiva / 2);
-      container.scrollTo({ left: scrollFinal, behavior: 'smooth' });
+    const ativa = document.querySelector('.tab.active');
+    if (ativa) {
+      ativa.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     }
   }, 100);
 }
@@ -196,28 +195,28 @@ function carregarProdutos(data){
   renderTabs();
   renderProdutos();
   atualizar();
-  centrarAba(categoriaAtual);
+  centrarAbaAtiva();
 }
 
 function renderTabs() {
   document.getElementById('tabs').innerHTML =
-    listaAbas.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
+    listaAbas.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}')">${c}</div>`).join("");
 }
 
 fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); });
 setInterval(()=>{ fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); }); }, 120000);
 
-function mudar(c,el){ 
+function mudar(c){ 
   categoriaAtual = c; 
   paginaAtual = 1; 
   localStorage.setItem("ultimaCat", c); 
   document.getElementById('pesquisa').value = "";
   
-  let outras = listaAbas.filter(cat => cat !== c);
-  listaAbas = [c, ...shuffle(outras)];
+  // Baralha mantendo a lógica dinâmica
+  listaAbas = shuffle(listaAbas);
   
   renderTabs();
-  centrarAba(c);
+  centrarAbaAtiva();
   renderProdutos(); 
 }
 
