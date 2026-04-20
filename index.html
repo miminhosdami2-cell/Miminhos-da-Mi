@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Miminhos da Mi</title>
+<link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
 <link rel="apple-touch-icon" href="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZQABachS_t8wMmKI4hL__gaNEWeA-jEAAvQlAAKmj0FWFSMMzvyYcaE6BA.png">
 <meta name="theme-color" content="#db2777">
@@ -46,6 +47,10 @@ h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-family:'Gre
 
 .btn-w { background:#25D366; color:white; padding:15px; border:none; width:100%; border-radius:10px; margin-top:8px; cursor:pointer; font-weight: bold; font-size: 16px; }
 
+/* Estilo para a Notificação de Instalação */
+#install-banner { position: fixed; bottom: 20px; left: 10px; right: 10px; background: var(--rosa); color: white; padding: 15px; border-radius: 12px; display: none; z-index: 10001; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+#install-banner button { background: white; color: var(--rosa); border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+
 .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:none; justify-content:center; align-items:center; z-index:10000; }
 .modal img { max-width:95%; max-height:85%; border-radius:10px; }
 .modal-texto { background:white; padding:25px; border-radius:20px; max-width:85%; text-align:center; }
@@ -62,6 +67,11 @@ input, select { width:100%; padding:12px; margin-top:8px; border-radius:8px; bor
 <div id="splash">
   <img src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZNBpyDNjcgFat1zgMyeFxqRGE_GUxgACpiUAAqaPQVa1bCMYXlu7BzoE.jpg">
   <h2>Olá 👋</h2>
+</div>
+
+<div id="install-banner">
+  <div>Gostavas de ter a Miminhos da Mi no teu ecrã inicial? ✨</div>
+  <button id="install-button">Instalar Agora</button>
 </div>
 
 <h1>
@@ -111,6 +121,43 @@ input, select { width:100%; padding:12px; margin-top:8px; border-radius:8px; bor
 </div>
 
 <script>
+// Registo do Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW error:', err));
+  });
+}
+
+// Lógica de Instalação (PWA)
+let deferredPrompt;
+const installBanner = document.getElementById('install-banner');
+const installButton = document.getElementById('install-button');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  
+  // Contagem de visitas para mostrar apenas na 3ª vez
+  let visitas = parseInt(localStorage.getItem('visitas_miminhos') || '0') + 1;
+  localStorage.setItem('visitas_miminhos', visitas);
+  
+  if (visitas >= 3) {
+    installBanner.style.display = 'block';
+  }
+});
+
+installButton.addEventListener('click', () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        installBanner.style.display = 'none';
+      }
+      deferredPrompt = null;
+    });
+  }
+});
+
 window.onload = () => setTimeout(() => document.getElementById("splash").style.display = "none", 2000);
 
 const API = 'https://script.google.com/macros/s/AKfycbw7iXZ525CvJqAHfBR23OsiarAxrjFU_vaHA75JA7G2hjy9Xany3bvKNdkpNQP7Jch3/exec'; 
@@ -142,14 +189,9 @@ fetch(API).then(r=>r.json()).then(data => {
     significado: p.significado || ""
   })).filter(p => !isNaN(p.id));
 
-  // Lógica de Random nos Itens (Shuffle)
   db.sort(() => Math.random() - 0.5);
-
   let cats = [...new Set(db.map(p=>p.categoria))];
-  
-  if(!categoriaAtual) {
-    categoriaAtual = cats[Math.floor(Math.random() * cats.length)];
-  }
+  if(!categoriaAtual) categoriaAtual = cats[Math.floor(Math.random() * cats.length)];
   
   renderTabs(cats);
   renderProdutos();
