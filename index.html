@@ -41,8 +41,6 @@ h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-family:'Gre
 
 .carrinho { background:white; padding:20px; border-radius:15px; margin-top:30px; border: 2px solid var(--rosa); }
 .item-cart { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom: 1px solid #eee; padding-bottom: 5px; font-size: 14px; }
-
-/* Botões + e - reduzidos para tamanho discreto */
 .cart-btns { display: flex; gap: 5px; align-items: center; }
 .cart-btns button { background: #f8f8f8; border: 1px solid #ccc; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center; }
 
@@ -144,9 +142,11 @@ fetch(API).then(r=>r.json()).then(data => {
     significado: p.significado || ""
   })).filter(p => !isNaN(p.id));
 
+  // Lógica de Random nos Itens (Shuffle)
+  db.sort(() => Math.random() - 0.5);
+
   let cats = [...new Set(db.map(p=>p.categoria))];
   
-  // Lógica de Categoria Aleatória ao entrar na loja
   if(!categoriaAtual) {
     categoriaAtual = cats[Math.floor(Math.random() * cats.length)];
   }
@@ -251,9 +251,9 @@ function mudarQtd(i, n) {
 
 function limparCarrinho() { if(confirm("Anular pedido?")){ cart = []; localStorage.removeItem("cart"); atualizar(); } }
 function abrirImg(src) { document.getElementById('modalImg').style.display = 'flex'; document.getElementById('imgGrande').src = src; }
-function abrirSignificado(nome, texto) {
+function abrirSignificado(nome, text) {
   document.getElementById('tituloPedra').innerText = nome;
-  document.getElementById('corpoSignificado').innerText = texto || "Significado disponível em breve! ✨";
+  document.getElementById('corpoSignificado').innerText = text || "Significado disponível em breve! ✨";
   document.getElementById('modalTexto').style.display = 'flex';
 }
 function fecharModal() { document.getElementById('modalImg').style.display = 'none'; document.getElementById('modalTexto').style.display = 'none'; }
