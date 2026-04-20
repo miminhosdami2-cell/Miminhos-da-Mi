@@ -139,7 +139,7 @@ if ('serviceWorker' in navigator) {
 
 const API = 'https://script.google.com/macros/s/AKfycbw7iXZ525CvJqAHfBR23OsiarAxrjFU_vaHA75JA7G2hjy9Xany3bvKNdkpNQP7Jch3/exec'; 
 let db = [];
-let listaCategorias = []; 
+let listaAbas = []; 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let favs = JSON.parse(localStorage.getItem("favs")) || [];
 let categoriaAtual = localStorage.getItem("ultimaCat") || ""; 
@@ -147,17 +147,18 @@ let paginaAtual = 1;
 const itensPorPagina = 10;
 
 function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
+  let arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
-  return array;
+  return arr;
 }
 
 function guardar(){ localStorage.setItem("cart", JSON.stringify(cart)); }
 
 function carregarProdutos(data){
-  db = shuffle(data.map(p=>({
+  let raw = data.map(p=>({
     ...p,
     id: p.id ? parseInt(p.id) : null,
     preco: parseFloat(p.preco),
@@ -165,15 +166,17 @@ function carregarProdutos(data){
     promo: p.promo === "sim",
     categoria: p.categoria || "Outros",
     significado: p.significado || "" 
-  }))).filter(p => p.id !== null && !isNaN(p.id));
+  })).filter(p => p.id !== null && !isNaN(p.id));
+  
+  db = shuffle(raw);
   
   let categoriasBase = [...new Set(db.map(p=>p.categoria))];
   categoriasBase = shuffle(categoriasBase);
 
   let temPromos = db.some(p => p.promo);
-  listaCategorias = temPromos ? ["🔥 Promoções", ...categoriasBase] : categoriasBase;
+  listaAbas = temPromos ? ["🔥 Promoções", ...categoriasBase] : categoriasBase;
   
-  if(!categoriaAtual || !listaCategorias.includes(categoriaAtual)) categoriaAtual = listaCategorias[0];
+  if(!categoriaAtual || !listaAbas.includes(categoriaAtual)) categoriaAtual = listaAbas[0];
 
   renderTabs();
   renderProdutos();
@@ -182,10 +185,10 @@ function carregarProdutos(data){
 
 function renderTabs() {
   document.getElementById('tabs').innerHTML =
-    listaCategorias.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
+    listaAbas.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
 }
 
-fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); });
+fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); }).catch(e => console.error("Erro API:", e));
 setInterval(()=>{ fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); }); }, 120000);
 
 function mudar(c,el){ 
@@ -194,8 +197,8 @@ function mudar(c,el){
   localStorage.setItem("ultimaCat", c); 
   document.getElementById('pesquisa').value = "";
   
-  let outras = listaCategorias.filter(cat => cat !== c);
-  listaCategorias = [c, ...shuffle(outras)];
+  let outras = listaAbas.filter(cat => cat !== c);
+  listaAbas = [c, ...shuffle(outras)];
   
   renderTabs();
   
@@ -315,5 +318,28 @@ function mbway(){ alert("Pagar para: 938655760\nEnvie o comprovativo pelo WhatsA
 
 function abrirImg(src){ 
   document.getElementById('modalImg').style.display="flex"; 
-  document.
-  
+  document.getElementById('imgGrande').src=src;
+  history.pushState({ modalAberto: true }, ""); 
+}
+
+function abrirSignificado(nome, texto){
+  if(!texto || texto === "") texto = "O significado desta pedra será adicionado em breve! ✨";
+  document.getElementById('tituloPedra').innerText = nome;
+  document.getElementById('corpoSignificado').innerText = texto;
+  document.getElementById('modalTexto').style.display="flex";
+  history.pushState({ modalAberto: true }, "");
+}
+
+function fecharModal(){ 
+  document.getElementById('modalImg').style.display="none"; 
+  document.getElementById('modalTexto').style.display="none"; 
+  if(history.state && history.state.modalAberto) history.back();
+}
+
+window.addEventListener('popstate', function(event) {
+  document.getElementById('modalImg').style.display="none";
+  document.getElementById('modalTexto').style.display="none";
+});
+</script>
+</body>
+</html>
