@@ -139,7 +139,7 @@ if ('serviceWorker' in navigator) {
 
 const API = 'https://script.google.com/macros/s/AKfycbw7iXZ525CvJqAHfBR23OsiarAxrjFU_vaHA75JA7G2hjy9Xany3bvKNdkpNQP7Jch3/exec'; 
 let db = [];
-let categoriasAtuais = []; // Armazena a ordem atual das categorias
+let categoriasAtuais = []; 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let favs = JSON.parse(localStorage.getItem("favs")) || [];
 let categoriaAtual = localStorage.getItem("ultimaCat") || ""; 
@@ -194,15 +194,20 @@ function mudar(c,el){
   localStorage.setItem("ultimaCat", c); 
   document.getElementById('pesquisa').value = "";
   
-  // Lógica de Shuffle nas Abas: Mantém a ativa e baralha as outras
   let outras = categoriasAtuais.filter(cat => cat !== c);
   categoriasAtuais = [c, ...shuffle(outras)];
   
   renderTabs();
   
-  // Centrar a aba ativa
-  const novaAbaAtiva = Array.from(document.querySelectorAll('.tab')).find(t => t.innerText === c);
-  if(novaAbaAtiva) novaAbaAtiva.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  // Lógica para centralizar a aba ativa no centro do container
+  setTimeout(() => {
+    const container = document.getElementById('tabs');
+    const ativa = Array.from(document.querySelectorAll('.tab')).find(t => t.innerText === c);
+    if(ativa) {
+      const scrollPos = ativa.offsetLeft - (container.offsetWidth / 2) + (ativa.offsetWidth / 2);
+      container.scrollTo({ left: scrollPos, behavior: 'smooth' });
+    }
+  }, 10);
   
   renderProdutos(); 
 }
@@ -282,57 +287,5 @@ function atualizar(){
   });
   document.getElementById('itens-carrinho').innerHTML = h || "<p>O carrinho está vazio.</p>";
   let envio = document.getElementById('envio').value;
-  document.getElementById('total-carrinho').innerHTML = `<strong>Total: ${total.toFixed(2)}€</strong><br><small>Envio: ${envio}</small>`;
-}
-
-function finalizar(){
-  let n = document.getElementById('cliente').value;
-  let t = document.getElementById('telefone').value;
-  let m = document.getElementById('morada').value;
-  let envio = document.getElementById('envio').value;
-  if(cart.length === 0) return alert("Carrinho vazio!");
-  if(!n) return alert("Indique o seu nome.");
-  let total = cart.reduce((acc,p)=>acc + (p.qtd * p.preco),0);
-  let msg = `*Pedido Miminhos da Mi*\n*Cliente:* ${n}\n*Tel:* ${t}\n*Envio:* ${envio}\n*Morada:* ${m}\n\n*Itens:*\n`;
-  cart.forEach(p=>{ msg += `• #${p.id} - ${p.nome} (x${p.qtd}) - ${(p.qtd*p.preco).toFixed(2)}€\n`; });
-  msg += `\n*TOTAL: ${total.toFixed(2)}€*`;
-  window.open(`https://wa.me/351938655760?text=${encodeURIComponent(msg)}`);
-}
-
-function copiar(){ 
-  let n = document.getElementById('cliente').value || "Cliente";
-  let total = cart.reduce((acc,p)=>acc + (p.qtd * p.preco),0);
-  let msg = `Pedido Miminhos da Mi - ${n} - Total: ${total.toFixed(2)}€`;
-  navigator.clipboard.writeText(msg); 
-  alert("Resumo copiado!"); 
-}
-
-function mbway(){ alert("Pagar para: 938655760\nEnvie o comprovativo pelo WhatsApp. 😊"); }
-
-function abrirImg(src){ 
-  document.getElementById('modalImg').style.display="flex"; 
-  document.getElementById('imgGrande').src=src;
-  history.pushState({ modalAberto: true }, ""); 
-}
-
-function abrirSignificado(nome, texto){
-  if(!texto || texto === "") texto = "O significado desta pedra será adicionado em breve! ✨";
-  document.getElementById('tituloPedra').innerText = nome;
-  document.getElementById('corpoSignificado').innerText = texto;
-  document.getElementById('modalTexto').style.display="flex";
-  history.pushState({ modalAberto: true }, "");
-}
-
-function fecharModal(){ 
-  document.getElementById('modalImg').style.display="none"; 
-  document.getElementById('modalTexto').style.display="none"; 
-  if(history.state && history.state.modalAberto) history.back();
-}
-
-window.addEventListener('popstate', function(event) {
-  document.getElementById('modalImg').style.display="none";
-  document.getElementById('modalTexto').style.display="none";
-});
-</script>
-</body>
-</html>
+  document.getElementById('total-carrinho').innerHTML = `<strong>
+  
