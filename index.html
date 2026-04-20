@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-<script defer src="https://cloud.umami.is/script.js" data-website-id="0ba238ea-b8cf-4ee7-b94d-218e2acea63f"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Miminhos da Mi</title>
@@ -140,6 +139,7 @@ if ('serviceWorker' in navigator) {
 
 const API = 'https://script.google.com/macros/s/AKfycbw7iXZ525CvJqAHfBR23OsiarAxrjFU_vaHA75JA7G2hjy9Xany3bvKNdkpNQP7Jch3/exec'; 
 let db = [];
+let categoriasAtuais = []; // Armazena a ordem atual das categorias
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let favs = JSON.parse(localStorage.getItem("favs")) || [];
 let categoriaAtual = localStorage.getItem("ultimaCat") || ""; 
@@ -169,13 +169,20 @@ function carregarProdutos(data){
   
   let categoriasBase = [...new Set(db.map(p=>p.categoria))];
   categoriasBase = shuffle(categoriasBase);
+
   let temPromos = db.some(p => p.promo);
-  let categoriasFinal = temPromos ? ["🔥 Promoções", ...categoriasBase] : categoriasBase;
-  if(!categoriaAtual || !categoriasFinal.includes(categoriaAtual)) categoriaAtual = categoriasFinal[0];
-  document.getElementById('tabs').innerHTML =
-    categoriasFinal.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
+  categoriasAtuais = temPromos ? ["🔥 Promoções", ...categoriasBase] : categoriasBase;
+  
+  if(!categoriaAtual || !categoriasAtuais.includes(categoriaAtual)) categoriaAtual = categoriasAtuais[0];
+
+  renderTabs();
   renderProdutos();
   atualizar();
+}
+
+function renderTabs() {
+  document.getElementById('tabs').innerHTML =
+    categoriasAtuais.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
 }
 
 fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); });
@@ -186,9 +193,17 @@ function mudar(c,el){
   paginaAtual = 1; 
   localStorage.setItem("ultimaCat", c); 
   document.getElementById('pesquisa').value = "";
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); 
-  el.classList.add('active'); 
-  el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  
+  // Lógica de Shuffle nas Abas: Mantém a ativa e baralha as outras
+  let outras = categoriasAtuais.filter(cat => cat !== c);
+  categoriasAtuais = [c, ...shuffle(outras)];
+  
+  renderTabs();
+  
+  // Centrar a aba ativa
+  const novaAbaAtiva = Array.from(document.querySelectorAll('.tab')).find(t => t.innerText === c);
+  if(novaAbaAtiva) novaAbaAtiva.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  
   renderProdutos(); 
 }
 
@@ -202,15 +217,18 @@ function renderProdutos(){
     if(categoriaAtual === "🔥 Promoções") return p.promo;
     return p.categoria === categoriaAtual;
   });
+
   let totalPaginas = Math.ceil(lista.length / itensPorPagina);
   let inicio = (paginaAtual - 1) * itensPorPagina;
   let itens = lista.slice(inicio, inicio + itensPorPagina);
   let h="";
+  
   itens.forEach(p=>{
     let fav = favs.includes(p.nome) ? "❤️" : "🤍";
     let precoHTML = p.promo && p.precoPromo 
       ? `<p style="text-decoration:line-through;color:#999;font-size:13px;">${p.preco.toFixed(2)}€</p><p style="color:red;font-weight:bold;">${p.precoPromo.toFixed(2)}€ 🔥</p>`
       : `<p style="font-weight:bold;">${p.preco.toFixed(2)}€</p>`;
+
     h+=`<div class="card">
       <div class="card-wrap">
         ${p.promo ? '<div class="badge">PROMO</div>' : ''}
