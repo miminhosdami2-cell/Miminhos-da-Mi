@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
@@ -39,12 +39,10 @@ h1 .titulo { margin-top:8px; color:var(--rosa); font-size:36px; font-family:'Gre
 .nome-clicavel { cursor:pointer; color:var(--rosa); text-decoration:underline; font-size: 18px; margin: 0 0 10px 0; }
 .btn-add { background:var(--rosa); color:white; border:none; padding:12px; width:100%; border-radius:10px; cursor:pointer; font-weight: bold; }
 
-/* Ajuste Fino nos botões de quantidade do carrinho */
 .carrinho { background:white; padding:20px; border-radius:15px; margin-top:30px; border: 2px solid var(--rosa); }
 .item-cart { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
 .cart-btns { display: flex; gap: 8px; align-items: center; }
-.cart-btns button { background: #f0f0f0; border: 1px solid #ddd; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: center; }
-.cart-btns button:active { background: #e0e0e0; }
+.cart-btns button { background: #f0f0f0; border: 1px solid #ddd; width: 35px; height: 35px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: center; }
 
 .btn-w { background:#25D366; color:white; padding:15px; border:none; width:100%; border-radius:10px; margin-top:8px; cursor:pointer; font-weight: bold; font-size: 16px; }
 
@@ -133,7 +131,7 @@ function centrarAba(texto) {
   }, 100);
 }
 
-function carregarProdutos(data){
+fetch(API).then(r=>r.json()).then(data => {
   db = data.map(p=>({
     ...p,
     id: parseInt(p.id),
@@ -151,7 +149,7 @@ function carregarProdutos(data){
   renderProdutos();
   atualizar();
   centrarAba(categoriaAtual);
-}
+});
 
 function renderTabs(cats) {
   let labels = db.some(p=>p.promo) ? ["🔥 Promoções", ...cats] : cats;
@@ -160,14 +158,13 @@ function renderTabs(cats) {
   `).join("");
 }
 
-fetch(API).then(r=>r.json()).then(carregarProdutos);
-
 function mudarCat(c) {
   categoriaAtual = c;
   paginaAtual = 1;
   localStorage.setItem("ultimaCat", c);
   document.getElementById('pesquisa').value = "";
-  renderTabs([...new Set(db.map(p=>p.categoria))]);
+  let cats = [...new Set(db.map(p=>p.categoria))];
+  renderTabs(cats);
   renderProdutos();
   centrarAba(c);
 }
@@ -278,5 +275,13 @@ function finalizar() {
   let envio = document.getElementById('envio').value;
   if(!nome || !tel) return alert("Por favor indica Nome e Telemóvel.");
   
-  let total = cart.reduce((acc,p)=> acc + (p
-                                           
+  let total = cart.reduce((acc,p)=> acc + (p.precoFinal*p.qtd), 0);
+  let msg = `*PEDIDO MIMINHOS DA MI*\n\n*Cliente:* ${nome}\n*Tel:* ${tel}\n*Morada:* ${morada}\n*Envio:* ${envio}\n\n*ITENS:*\n` + 
+            cart.map(p => `- #${p.id} ${p.nome} (x${p.qtd})`).join("\n") + 
+            `\n\n*TOTAL:* ${total.toFixed(2)}€\n*Pagamento:* MBWay 938655760`;
+            
+  window.open(`https://wa.me/351938655760?text=${encodeURIComponent(msg)}`);
+}
+</script>
+</body>
+</html>
