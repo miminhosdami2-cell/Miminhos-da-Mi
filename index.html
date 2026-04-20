@@ -155,7 +155,22 @@ function shuffle(array) {
   return arr;
 }
 
-function guardar(){ localStorage.setItem("cart", JSON.stringify(cart)); }
+function centrarAba(texto) {
+  setTimeout(() => {
+    const container = document.getElementById('tabs');
+    const abas = document.querySelectorAll('.tab');
+    let ativa = null;
+    abas.forEach(t => { if(t.innerText === texto) ativa = t; });
+    
+    if (ativa && container) {
+      const offsetAtiva = ativa.offsetLeft;
+      const larguraAtiva = ativa.offsetWidth;
+      const larguraContainer = container.offsetWidth;
+      const scrollFinal = offsetAtiva - (larguraContainer / 2) + (larguraAtiva / 2);
+      container.scrollTo({ left: scrollFinal, behavior: 'smooth' });
+    }
+  }, 100);
+}
 
 function carregarProdutos(data){
   let raw = data.map(p=>({
@@ -181,6 +196,7 @@ function carregarProdutos(data){
   renderTabs();
   renderProdutos();
   atualizar();
+  centrarAba(categoriaAtual);
 }
 
 function renderTabs() {
@@ -188,7 +204,7 @@ function renderTabs() {
     listaAbas.map((c)=>`<div class="tab ${c === categoriaAtual ? 'active' : ''}" onclick="mudar('${c}',this)">${c}</div>`).join("");
 }
 
-fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); }).catch(e => console.error("Erro API:", e));
+fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); });
 setInterval(()=>{ fetch(API).then(r=>r.json()).then(data=>{ carregarProdutos(data); }); }, 120000);
 
 function mudar(c,el){ 
@@ -201,16 +217,7 @@ function mudar(c,el){
   listaAbas = [c, ...shuffle(outras)];
   
   renderTabs();
-  
-  setTimeout(() => {
-    const container = document.getElementById('tabs');
-    const ativa = Array.from(document.querySelectorAll('.tab')).find(t => t.innerText === c);
-    if(ativa) {
-      const scrollPos = ativa.offsetLeft - (container.offsetWidth / 2) + (ativa.offsetWidth / 2);
-      container.scrollTo({ left: scrollPos, behavior: 'smooth' });
-    }
-  }, 50);
-  
+  centrarAba(c);
   renderProdutos(); 
 }
 
