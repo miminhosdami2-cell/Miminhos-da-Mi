@@ -207,6 +207,11 @@ function mudarCat(c) {
   renderTabs(cats);
   renderProdutos();
   centrarAba(c);
+
+  // Rastreio Umami para abas
+  if (window.umami) {
+    umami.track(window.location.pathname, { url: '/' + c });
+  }
 }
 
 function irParaPagina(n) { paginaAtual = n; renderProdutos(); window.scrollTo(0,0); }
