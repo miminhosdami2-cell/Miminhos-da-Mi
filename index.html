@@ -208,9 +208,9 @@ function mudarCat(c) {
   renderProdutos();
   centrarAba(c);
 
-  // NOVO AJUSTE: Força a mudança de URL virtual para o Umami registar
+  // CORREÇÃO: Usamos '#' para evitar erro 404 ao atualizar a página
   const cleanCat = c.replace(/\s+/g, '-');
-  window.history.pushState({}, '', '/' + cleanCat);
+  window.history.pushState({}, '', '#' + cleanCat);
   
   if (window.umami) {
     umami.track(c); 
