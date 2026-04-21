@@ -208,9 +208,12 @@ function mudarCat(c) {
   renderProdutos();
   centrarAba(c);
 
-  // Rastreio Umami para abas
+  // NOVO AJUSTE: Força a mudança de URL virtual para o Umami registar
+  const cleanCat = c.replace(/\s+/g, '-');
+  window.history.pushState({}, '', '/' + cleanCat);
+  
   if (window.umami) {
-    umami.track(window.location.pathname, { url: '/' + c });
+    umami.track(c); 
   }
 }
 
