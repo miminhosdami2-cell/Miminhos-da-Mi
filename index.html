@@ -3,8 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Miminhos da Mi</title>
 
+<!-- Otimização para o Google (SEO) -->
+<title>Miminhos da Mi | Cristais, Pulseiras e Presentes Artesanais ✨</title>
+<meta name="description" content="Descubra a magia dos cristais na Miminhos da Mi. Pulseiras, pedras naturais, taças e acessórios artesanais com significados únicos. Encomende online!">
+<meta name="keywords" content="cristais, pedras naturais, pulseiras artesanais, minerais, esoterismo, Miminhos da Mi, Portugal, cristais cura">
+<meta property="og:title" content="Miminhos da Mi | Cristais e Acessórios ✨">
+<meta property="og:description" content="A tua loja favorita de cristais e mimos artesanais. Espreita a nossa coleção!">
+<meta property="og:image" content="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESZNBpyDNjcgFat1zgMyeFxqRGE_GUxgACpiUAAqaPQVa1bCMYXlu7BzoE.jpg">
+<meta property="og:url" content="https://miminhosdami.github.io/">
+
+<!-- Umami Analytics -->
 <script defer src="https://cloud.umami.is/script.js" data-website-id="0ba238ea-b8cf-4ee7-b94d-218e2acea63f"></script>
 
 <link rel="manifest" href="manifest.json">
@@ -208,12 +217,13 @@ function mudarCat(c) {
   renderProdutos();
   centrarAba(c);
 
-  // CORREÇÃO: Usamos '#' para evitar erro 404 ao atualizar a página
   const cleanCat = c.replace(/\s+/g, '-');
   window.history.pushState({}, '', '#' + cleanCat);
   
+  // CORREÇÃO UMAMI: Regista o evento de troca de aba e a página virtual
   if (window.umami) {
-    umami.track(c); 
+    umami.track('Ver Categoria', { categoria: c });
+    umami.track((props) => ({ ...props, url: window.location.pathname + '#' + cleanCat }));
   }
 }
 
